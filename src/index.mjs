@@ -29,6 +29,7 @@ export class MarkerEngine{
         this.options = options;
         this.emitter = new Emitter();
         (this.emitter).onto(this);
+        this.submeshes = {};
     }
     
     addMarker(marker){

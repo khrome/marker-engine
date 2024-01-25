@@ -11,7 +11,9 @@ import {
 import { 
     World,
     Plane,
+    //Trimesh,
     Material,
+    Vec3,
     Body
 } from '../node_modules/cannon-es/dist/cannon-es.js';
 
@@ -24,6 +26,9 @@ export const messageHandler = (e)=>{
             case 'world': //incoming world definition
                 console.log('WORLD')
                 self.world = data.world;
+                self.physicalWorld = new World({
+                    gravity: new Vec3(0, 0, -9.81)
+                });
                 if(data.markerTypes){
                     
                 }
@@ -52,6 +57,9 @@ export const messageHandler = (e)=>{
 export const workerStateSetup = ()=>{
     self.markers = [];
     self.addSubmesh = (submeshData)=>{
+        if(submeshData.tileX && submeshData.tileY){
+            
+        }
         const physicalGroundMaterial = new Material();
         const physicsMesh = new Body({
             shape: new Plane(),
@@ -65,12 +73,14 @@ export const workerStateSetup = ()=>{
         //todo: look up against class index
         const marker = new Marker(markerData);
         self.markers.push(marker);
+        const physicsBody = marker.body();
+        self.physicalWorld.addBody(physicsBody);
         console.log('markerAdd')
     };
     const evaluateTurn = (delta)=>{
         // physics tick
         // marker actions
-        let lcv=null
+        let lcv=null;
         for(lcv=0; lcv< self.markers.length; lcv++){
             self.markers[lcv].act();
         }

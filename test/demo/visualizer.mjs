@@ -29,6 +29,15 @@ export class Visualizer{
         );
     }
     
+    start(turnHandler){
+        const drawLoop = ()=>{
+            this.draw();
+            if(turnHandler) turnHandler();
+            setTimeout(drawLoop, 500);
+        };
+        drawLoop();
+    }
+    
     attach(el){
         el.appendChild(this.canvas);
         this.canvas.removeAttribute('hidden');
