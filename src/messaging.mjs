@@ -36,19 +36,26 @@ export const messageHandler = (e)=>{
             case 'submesh': //incoming submesh definition
                 self.addSubmesh(data.submesh);
                 break;
-            case 'start': //incoming submesh definition
+            case 'start': //incoming start execution loop
                 console.log('START')
                 self.start();
                 break;
-            case 'stop': //incoming submesh definition
+            case 'stop': //incoming stop execution loop after next turn
                 self.stop();
                 break;
             case 'add-marker': //incoming marker definition
-                self.addMarker(data.marker);
+                console.log('added marker', data);
+                
+                self.addMarker(new Marker(data.marker));
                 break;
             case 'move-marker': //incoming marker command definition
+                break;
             case 'marker-action': //incoming submesh definition
-                console.log(data)
+                const action = data.action;
+                const subject = self.markers.find((marker)=> marker.id == action.id );
+                subject.action(data.action.name, data.action.options.target);
+                console.log(`object for id: ${data.action.id}`, subject, action);
+                
         }
     }
     //*/
@@ -84,11 +91,19 @@ export const workerStateSetup = ()=>{
         for(lcv=0; lcv< self.markers.length; lcv++){
             self.markers[lcv].act();
         }
-        // eventually: just deltas
         // treadmill check + optional update
     };
     const markerStates = ()=>{
-        return JSON.stringify({});
+        const markers = [];
+        self.markers.forEach((marker)=>{
+            if(marker.dirty){
+                markers.push(marker.data());
+                marker.dirty = false;
+            }
+        });
+        return {
+            markers
+        };
     };
     self.start = ()=>{
         if(!self.world) throw new Error('must set world to start');
@@ -101,10 +116,13 @@ export const workerStateSetup = ()=>{
         setTimeout((main = ()=>{
             evaluateTurn();
             currentState = markerStates();
-            self.postMessage(JSON.stringify({
-                type:'state', 
-                state: currentState
-            }));
+            if(currentState.markers.length){
+                console.log(`state update with ${currentstate.markers.length} markers`)
+                self.postMessage(JSON.stringify({
+                    type:'state', 
+                    state: currentState
+                }));
+            }
             if(self.running) setTimeout(main, 0);
         }), 0);
     };

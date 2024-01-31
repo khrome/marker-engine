@@ -19,9 +19,6 @@ import {
  * A JSON object
  * @typedef { object } JSON
  */
-import { 
-    ᱛ as createWorker 
-} from '@environment-safe/execution';
 import { Emitter } from 'extended-emitter';
  
 export class MarkerEngine{
@@ -35,6 +32,7 @@ export class MarkerEngine{
     addMarker(marker){
         //add the marker to the 
         const data = marker.data();
+        marker.engine = this;
         this.worker.postMessage(JSON.stringify({
             type: 'add-marker',
             marker: data
@@ -47,7 +45,9 @@ export class MarkerEngine{
         this.worker = new Worker(url, {type:'module'});
         this.worker.onmessage = (e)=>{
             const data = JSON.parse(e.data);
-            this.emit('state', data)
+            if(data.type === 'state'){
+                this.emit('state', data.state)
+            }
         };
         this.worker.postMessage(JSON.stringify({
             type: 'world',

@@ -19,12 +19,59 @@ import * as actions from './actions.mjs';
 
 export class Marker{
     constructor(options={}){
-        this.actions = options.actions || {};
+        console.log('marker options', options);
+        this.actions = Object.keys(
+            options.actions || {}
+        ).reduce((agg, key)=>{
+            if(typeof options.actions[key] === 'string'){
+                agg[key] = actions[options.actions[key]];
+            }else{
+                agg[key] = options.actions[key];
+            }
+        }, {});
         this.actionQueue = [];
+        this.position = new Vector3();
+        if(options.position){
+            this.position.x = options.position.x;
+            this.position.y = options.position.y;
+            this.position.z = options.position.z;
+        }
+        this.orientation = new Vector3();
+        if(options.orientation){
+            this.orientation.x = options.orientation.x;
+            this.orientation.y = options.orientation.y;
+            this.orientation.z = options.orientation.z;
+        }
+        this.id = options.id || Math.floor(Math.random()*100000000000);
     }
     
-    action(options, target){
-        
+    //external action: a request to add this to the actionQueue
+    action(name, options, target){
+        if(this.engine){
+            //TODO: if we're already attached, remove
+            //we're outside the worker and need to send an action through it
+            this.engine.worker.postMessage(JSON.stringify({
+                type: 'marker-action',
+                action: {
+                    name,
+                    id: this.id,
+                    options,
+                    target
+                }
+            }));
+        }else{
+            //we're inside the engine and just queue an action directly
+            this.actionQueue.push({
+                name,
+                options
+            })
+        }
+    }
+    
+    //execute an action *now* using `delta` time
+    immediate(delta, name, options, target){
+        if(!this.actions[name]) throw new Error(`marker does not have action: ${name}`);
+        return this.actions[name](delta, this, target, options);
     }
     
     //representation for physics interaction
@@ -73,12 +120,37 @@ export class Marker{
     }
     
     data(options){
-        
+        return {
+            id: this.id,
+            position: {
+                x: this.position.x,
+                y: this.position.y,
+                z: this.position.z
+            },
+            orientation: {
+                x: this.position.x,
+                y: this.position.y,
+                z: this.position.z
+            }
+        }
     }
     
     act(delta){
-        const action = this.actionQueue[0];
-        this.actions[action];
+        let remainingTime = delta;
+        let actionDetail = null;
+        while(remainingTime > 0 && this.actionQueue.length){
+            actionDetail = this.actionQueue[0];
+            console.log('>>>', actionDetail);
+            if(actionDetail){
+                remainingTime = this.actions[actionDetail];
+                //we're done with this action and have some time remainder
+                if(remainingTime > 0){
+                    this.actionQueue.shift();
+                }
+                if(!this.dirty) this.dirty = true;
+            }
+        }
+        //if there's remaining time after depleting actions, it's spent idle
     }
 }
 

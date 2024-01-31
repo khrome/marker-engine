@@ -15,7 +15,18 @@ export class Visualizer{
     }
     
     update(states){
-        console.log('states', states);
+        states.markers.forEach((changedMarker)=>{
+            this.markers.forEach((existingMarker)=>{
+                if(existingMarker.id === changedMarker.id){
+                    existingMarker.position.x = changedMarker.position.x;
+                    existingMarker.position.y = changedMarker.position.y;
+                    existingMarker.position.z = changedMarker.position.z;
+                    existingMarker.orientation.x = changedMarker.orientation.x;
+                    existingMarker.orientation.y = changedMarker.orientation.y;
+                    existingMarker.orientation.z = changedMarker.orientation.z;
+                }
+            });
+        });
     }
     
     draw(){

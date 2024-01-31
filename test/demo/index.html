@@ -431,6 +431,21 @@
             "node:events": "../../node_modules/extended-emitter/node-events.mjs",
             "marker-engine": "../../src/index.mjs"
         } }</script>
+        <style>
+            body{
+                margin:0px;
+                padding:0px;
+            }
+            #viz2{
+                position:absolute;
+                top:0px;
+                right:0px;
+            }
+            #viz2 canvas{
+                height: 480px;
+                width: 480px;
+            }
+        </style>
     </head>
     <body>
         <div id="viz"></div>
@@ -466,16 +481,15 @@
                     )
                 }
                 markers.forEach((marker)=>{
-                    marker.action({name: 'moveTo', target: {
+                    marker.action('moveTo', {}, {
                         x: (Math.random()*48 -16),
-                        y: (Math.random()*48 -16)},
+                        y: (Math.random()*48 -16),
                         z: 0
                     });
                 });
                 engine.on('state', (data)=>{
-                    if(data.type === 'state'){
-                        viz.update(data.state)
-                    }
+                    viz.update(data);
+                    viz2.update(data);
                 });
                 viz.start();
                 viz2.start();
@@ -486,4 +500,4 @@
         </script>
 
     </body>
-<html>
+</html>
