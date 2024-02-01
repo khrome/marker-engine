@@ -50,7 +50,7 @@ export class Marker{
         if(this.engine){
             //TODO: if we're already attached, remove
             //we're outside the worker and need to send an action through it
-            this.engine.worker.postMessage(JSON.stringify({
+            const action = {
                 type: 'marker-action',
                 action: {
                     name,
@@ -58,12 +58,16 @@ export class Marker{
                     options,
                     target
                 }
-            }));
+            };
+            console.log('remote action', action)
+            this.engine.worker.postMessage(JSON.stringify(action));
         }else{
             //we're inside the engine and just queue an action directly
+            console.log('local')
             this.actionQueue.push({
                 name,
-                options
+                options,
+                target
             })
         }
     }
@@ -140,7 +144,7 @@ export class Marker{
         let actionDetail = null;
         while(remainingTime > 0 && this.actionQueue.length){
             actionDetail = this.actionQueue[0];
-            console.log('>>>', actionDetail);
+            //console.log('>>>', actionDetail);
             if(actionDetail){
                 remainingTime = this.actions[actionDetail];
                 //we're done with this action and have some time remainder

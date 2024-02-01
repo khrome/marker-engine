@@ -15,7 +15,7 @@ import {
     Material,
     Vec3,
     Body
-} from '../node_modules/cannon-es/dist/cannon-es.js';
+} from './cannon-es.mjs';
 
 //const self = {};
 
@@ -44,8 +44,6 @@ export const messageHandler = (e)=>{
                 self.stop();
                 break;
             case 'add-marker': //incoming marker definition
-                console.log('added marker', data);
-                
                 self.addMarker(new Marker(data.marker));
                 break;
             case 'move-marker': //incoming marker command definition
@@ -53,8 +51,8 @@ export const messageHandler = (e)=>{
             case 'marker-action': //incoming submesh definition
                 const action = data.action;
                 const subject = self.markers.find((marker)=> marker.id == action.id );
-                subject.action(data.action.name, data.action.options.target);
-                console.log(`object for id: ${data.action.id}`, subject, action);
+                subject.action(action.name, action.options, action.target);
+                //console.log(`object for id: ${data.action.id}`, subject, action);
                 
         }
     }
@@ -88,8 +86,8 @@ export const workerStateSetup = ()=>{
         // physics tick
         // marker actions
         let lcv=null;
-        for(lcv=0; lcv< self.markers.length; lcv++){
-            self.markers[lcv].act();
+        for(lcv=0; lcv < self.markers.length; lcv++){
+            self.markers[lcv].act(delta);
         }
         // treadmill check + optional update
     };
@@ -112,17 +110,21 @@ export const workerStateSetup = ()=>{
         let main = null;
         self.running = true;
         self.clock.start();
+        let delta = null;
         //yielding
         setTimeout((main = ()=>{
-            evaluateTurn();
+            delta = clock.getDelta();
+            
+            evaluateTurn(delta);
             currentState = markerStates();
+            //*
             if(currentState.markers.length){
-                console.log(`state update with ${currentstate.markers.length} markers`)
                 self.postMessage(JSON.stringify({
                     type:'state', 
                     state: currentState
                 }));
             }
+            //*/
             if(self.running) setTimeout(main, 0);
         }), 0);
     };

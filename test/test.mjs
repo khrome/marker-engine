@@ -1,33 +1,36 @@
 /* global describe:false */
 import { chai } from '@environment-safe/chai';
 import { it } from '@open-automaton/moka';
-import { MarkerEngine } from '../src/index.mjs';
+import { MarkerEngine, Marker } from '../src/index.mjs';
 const should = chai.should();
 
 describe('module', ()=>{
     describe('performs a simple test suite', ()=>{
         it('loads', async ()=>{
-            console.log('1');
             const engine = new MarkerEngine();
-            console.log('2');
             await engine.initialize();
-            console.log('3');
+            const marker = new Marker({
+                id : 'foo',
+                position: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }
+            });
+            engine.addMarker(marker);
             engine.start();
-            console.log('4');
+            marker.action('moveTo', {}, {x: 10, y: 10, z: 0});
             should.exist({});
-            console.log('5');
             let stateCount = 0;
-            console.log('6');
             const states = [];
-            console.log('7');
             await new Promise((resolve)=>{
                 engine.on('state', (data)=>{
+                    console.log('update', data.markers);
                     states.push(data);
                     stateCount++;
                     if(stateCount > 10) resolve();
                 });
             });
-            console.log('1');
             engine.stop();
             engine.cleanup();
         });
