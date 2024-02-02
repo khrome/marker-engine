@@ -2,8 +2,11 @@ export const moveTo = (delta, marker, target, options ={}, treadmill)  => { //me
     //const direction  = dir.subVectors( point, this.mesh.position ).normalize();
     //var raycaster  = new Raycaster( this.mesh.position, direction );
     //todo = test "crow flies" obstruction, if obstructed = path find
-    marker.action('turn', treadmill.worldPointFor(target), options, treadmill);
-    marker.action('forward', treadmill.worldPointFor(target), options, treadmill);
+    //marker.action('turn', treadmill.worldPointFor(target), options, treadmill);
+    //marker.action('forward', treadmill.worldPointFor(target), options, treadmill);
+    marker.action('turn', target, options, treadmill);
+    marker.action('forward', target, options, treadmill);
+    console.log('queued turn + forward')
     return delta; 
 };
 export const pathTo = (delta, marker, target, options ={}, treadmill)  => { //meta
