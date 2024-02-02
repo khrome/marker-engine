@@ -82,17 +82,19 @@ export const workerStateSetup = ()=>{
         self.markers.push(marker);
         const physicsBody = marker.body();
         marker.mesh = physicsBody;
-        console.log('MESH', marker.mesh.position);
+        //console.log('MESH', marker.mesh);
         self.physicalWorld.addBody(physicsBody);
         console.log('markerAdd')
     };
     const evaluateTurn = (delta)=>{
         // physics tick
+        self.physicalWorld.step(delta);
         // marker actions
         try{
             let lcv=null;
             for(lcv=0; lcv < self.markers.length; lcv++){
                 self.markers[lcv].act(delta);
+                //console.log('MESH ON ACT', self.markers[lcv].mesh);
             }
         }catch(ex){
             console.log("ERR", ex)
@@ -123,17 +125,14 @@ export const workerStateSetup = ()=>{
         const main = ()=>{
             try{
                 delta = clock.getDelta();
-                
                 evaluateTurn(delta);
                 currentState = markerStates();
-                //*
                 if(currentState.markers.length){
                     self.postMessage(JSON.stringify({
                         type:'state', 
                         state: currentState
                     }));
                 }
-                //*/
                 if(self.running) setTimeout(main, 0);
             }catch(ex){
                 console.log('MAIN LOOP EX', ex);

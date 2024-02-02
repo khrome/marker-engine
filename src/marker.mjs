@@ -158,17 +158,39 @@ export class Marker{
     }
     
     data(options){
-        return {
-            id: this.id,
-            position: {
-                x: this.position.x,
-                y: this.position.y,
-                z: this.position.z
-            },
-            orientation: {
-                x: this.position.x,
-                y: this.position.y,
-                z: this.position.z
+        if(this.mesh){
+            const q = this.mesh.quaternion;
+            const angle = 2 * Math.acos(q.w);
+            const s = Math.sqrt(1 - q.w * q.w);
+            const x = Number.isNaN(q.x)?0:q.x / s;
+            const y = Number.isNaN(q.y)?0:q.y / s;
+            const z = Number.isNaN(q.z)?0:q.z / s;
+            return {
+                id: this.id,
+                position: {
+                    x: this.mesh.position.x,
+                    y: this.mesh.position.y,
+                    z: this.mesh.position.z
+                },
+                orientation: {
+                    x: x,
+                    y: y,
+                    z: z
+                }
+            }
+        }else{
+            return {
+                id: this.id,
+                position: {
+                    x: this.position.x,
+                    y: this.position.y,
+                    z: this.position.z
+                },
+                orientation: {
+                    x: this.orientation.x,
+                    y: this.orientation.y,
+                    z: this.orientation.z
+                }
             }
         }
     }
@@ -300,15 +322,11 @@ export class Marker{
             const delta = quaternionToEuler(this.mesh.quaternion) - targetAngle;
             //const delta = this.mesh.rotation.z - targetAngle;
             const motion = direction * maxRotation;
-            if(false && window.tools) {
-               Logger.log('turn-target', Logger.DEBUG, 'marker', localTarget);
-               Logger.log('turn-ray', Logger.DEBUG, 'marker', raycaster);
-               //window.tools.showRay(raycaster, 'turn-target-ray', '#0000FF');
-               //window.tools.showPoint(localTarget, 'turn-target', '#0000FF');
-            }
+            //console.log('turn angle', this.mesh.quaternion, this.mesh.rotation);
             if(delta > maxRotation){
                 const z = quaternionToEuler(this.mesh.quaternion);
                 const newValue = z + motion;
+                console.log('****', z, newValue);
                 if(newValue < 0){
                     this.mesh.quaternion.setFromAxisAngle( 
                         new Vector3( 0, 0, 1 ), 
@@ -316,6 +334,7 @@ export class Marker{
                     );
                     //this.mesh.rotation.z = (z + motion) + twoPI;
                 }else{
+                    console.log('####');
                     this.mesh.quaternion.setFromAxisAngle( 
                         new Vector3( 0, 0, 1 ), 
                         (z + motion) % twoPI 
@@ -328,6 +347,7 @@ export class Marker{
                     new Vector3( 0, 0, 1 ), 
                     targetAngle
                 );
+                console.log('----', this.mesh.quaternion, targetAngle);
                 //this.mesh.rotation.z = targetAngle;
                 //TBD compute remaining time
                 return 0;
