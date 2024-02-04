@@ -94,7 +94,6 @@ export class Marker{
                     target
                 }
             };
-            console.log('remote action', action)
             this.engine.worker.postMessage(JSON.stringify(action));
         }else{
             //we're inside the engine and just queue an action directly
@@ -326,7 +325,6 @@ export class Marker{
             if(delta > maxRotation){
                 const z = quaternionToEuler(this.mesh.quaternion);
                 const newValue = z + motion;
-                console.log('****', z, newValue);
                 if(newValue < 0){
                     this.mesh.quaternion.setFromAxisAngle( 
                         new Vector3( 0, 0, 1 ), 
@@ -334,7 +332,6 @@ export class Marker{
                     );
                     //this.mesh.rotation.z = (z + motion) + twoPI;
                 }else{
-                    console.log('####');
                     this.mesh.quaternion.setFromAxisAngle( 
                         new Vector3( 0, 0, 1 ), 
                         (z + motion) % twoPI 
@@ -347,7 +344,6 @@ export class Marker{
                     new Vector3( 0, 0, 1 ), 
                     targetAngle
                 );
-                console.log('----', this.mesh.quaternion, targetAngle);
                 //this.mesh.rotation.z = targetAngle;
                 //TBD compute remaining time
                 return 0;

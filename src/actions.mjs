@@ -4,9 +4,8 @@ export const moveTo = (delta, marker, target, options ={}, treadmill)  => { //me
     //todo = test "crow flies" obstruction, if obstructed = path find
     //marker.action('turn', treadmill.worldPointFor(target), options, treadmill);
     //marker.action('forward', treadmill.worldPointFor(target), options, treadmill);
-    marker.action('turn', target, options, treadmill);
-    marker.action('forward', target, options, treadmill);
-    console.log('queued turn + forward')
+    marker.action('turn', options, target, treadmill);
+    marker.action('forward', options, target, treadmill);
     return delta; 
 };
 export const pathTo = (delta, marker, target, options ={}, treadmill)  => { //meta
@@ -66,7 +65,7 @@ export const generateFireFn = (Projectile)=>{
                 velocity = 15 
             }); //*/
         }else{
-            newMarker.action('moveTo', worldPoint, {}, treadmill);
+            newMarker.action('moveTo', {}, worldPoint, treadmill);
         }
     };
 };

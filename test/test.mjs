@@ -28,7 +28,7 @@ describe('module', ()=>{
                     console.log('update', data.markers);
                     states.push(data);
                     stateCount++;
-                    if(stateCount > 10) resolve();
+                    if(stateCount > 10000) resolve();
                 });
             });
             engine.stop();
