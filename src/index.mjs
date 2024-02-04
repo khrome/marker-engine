@@ -34,6 +34,8 @@ export class MarkerEngine{
         const data = marker.data();
         marker.engine = this;
         marker.mesh = marker.model();
+        marker.normalizeMesh();
+        console.log('MESH', marker.mesh);
         this.worker.postMessage(JSON.stringify({
             type: 'add-marker',
             marker: data

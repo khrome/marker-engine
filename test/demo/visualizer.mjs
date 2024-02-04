@@ -18,12 +18,12 @@ export class Visualizer{
         states.markers.forEach((changedMarker)=>{
             this.markers.forEach((existingMarker)=>{
                 if(existingMarker.id === changedMarker.id){
-                    existingMarker.position.x = changedMarker.position.x;
-                    existingMarker.position.y = changedMarker.position.y;
-                    existingMarker.position.z = changedMarker.position.z;
-                    existingMarker.orientation.x = changedMarker.orientation.x;
-                    existingMarker.orientation.y = changedMarker.orientation.y;
-                    existingMarker.orientation.z = changedMarker.orientation.z;
+                    existingMarker.mesh.position.x = changedMarker.position.x;
+                    existingMarker.mesh.position.y = changedMarker.position.y;
+                    existingMarker.mesh.position.z = changedMarker.position.z;
+                    existingMarker.mesh.quaternion.x = changedMarker.quaternion.x;
+                    existingMarker.mesh.quaternion.y = changedMarker.quaternion.y;
+                    existingMarker.mesh.quaternion.z = changedMarker.quaternion.z;
                 }
             });
         });
@@ -38,6 +38,15 @@ export class Visualizer{
             this.canvas.width,
             this.canvas.height
         );
+        this.markers.forEach((existingMarker)=>{
+            context.beginPath();
+            context.arc(
+                existingMarker.mesh.position.x, 
+                existingMarker.mesh.position.y, 
+                10, 0, 2 * Math.PI
+            );
+            context.stroke();
+        });
     }
     
     start(turnHandler){

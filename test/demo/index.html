@@ -465,6 +465,10 @@
             const addMarker = (x, y, marker)=>{
                 markers.push(marker);
                 engine.addMarker(marker);
+                marker.mesh.position.x = x;
+                marker.mesh.position.y = y;
+                viz.addMarker(marker);
+                viz2.addMarker(marker);
             };
             (async()=>{
                 await engine.initialize();

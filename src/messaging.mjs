@@ -82,6 +82,7 @@ export const workerStateSetup = ()=>{
         self.markers.push(marker);
         const physicsBody = marker.body();
         marker.mesh = physicsBody;
+        marker.normalizeMesh();
         //console.log('MESH', marker.mesh);
         self.physicalWorld.addBody(physicsBody);
         console.log('markerAdd')

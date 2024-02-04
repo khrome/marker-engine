@@ -7,6 +7,8 @@ import {
     MeshPhongMaterial
 } from 'three';
 
+import { Marker } from '../../src/index.mjs';
+
 import { create as createLights } from './lighting.mjs';
 import { create as createCamera } from './camera.mjs';
 import { create as createRenderer } from './renderer.mjs';
@@ -22,8 +24,10 @@ export class Visualizer3D{
             color: "#00FF00", 
             flatShading: false
         });
+        /*
         const horizonPlane = new Mesh( horizonPlaneGeometry, horizonMaterial );
         scene.add(horizonPlane);
+        //*/
         this.markers = [];
         
         const renderer = createRenderer();
@@ -56,19 +60,21 @@ export class Visualizer3D{
         const marker = (
             incomingMarker instanceof Marker
         )?incomingMarker:new Marker(incomingMarker);
-        this.markers.push(marker)
+        this.markers.push(marker);
+        this.scene.add(marker.mesh);
+        console.log('ADDED', marker.mesh, marker.mesh.position.x, marker.mesh.position.y)
     }
     
     update(states){
         states.markers.forEach((changedMarker)=>{
             this.markers.forEach((existingMarker)=>{
                 if(existingMarker.id === changedMarker.id){
-                    existingMarker.position.x = changedMarker.position.x;
-                    existingMarker.position.y = changedMarker.position.y;
-                    existingMarker.position.z = changedMarker.position.z;
-                    existingMarker.orientation.x = changedMarker.orientation.x;
-                    existingMarker.orientation.y = changedMarker.orientation.y;
-                    existingMarker.orientation.z = changedMarker.orientation.z;
+                    existingMarker.mesh.position.x = changedMarker.position.x;
+                    existingMarker.mesh.position.y = changedMarker.position.y;
+                    existingMarker.mesh.position.z = changedMarker.position.z;
+                    existingMarker.mesh.quaternion.x = changedMarker.quaternion.x;
+                    existingMarker.mesh.quaternion.y = changedMarker.quaternion.y;
+                    existingMarker.mesh.quaternion.z = changedMarker.quaternion.z;
                 }
             });
         });

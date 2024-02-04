@@ -65,11 +65,17 @@ export class Marker{
             this.position.z = options.position.z;
         }
         this.orientation = new Vector3();
-        if(options.orientation){
-            this.orientation.x = options.orientation.x;
-            this.orientation.y = options.orientation.y;
-            this.orientation.z = options.orientation.z;
+        if(options.quaternion){
+            this.quaternion = new Quaternion(
+                options.quaternion.x,
+                options.quaternion.y,
+                options.quaternion.z,
+                options.quaternion.w
+            );
+        }else{
+            this.quaternion = new Quaternion();
         }
+        console.log('MO', options);
         this.id = options.id || Math.floor(Math.random()*100000000000);
         this.values = options.values || (options.entity?options.entity.defaultValues():{
             "movementSpeed" : 1,
@@ -78,6 +84,13 @@ export class Marker{
             "turnSpeed" : 0.1,
             "health" : 10
         })
+    }
+    
+    normalizeMesh(){
+        this.mesh.position.x = this.position.x;
+        this.mesh.position.y = this.position.y;
+        this.mesh.position.z = this.position.z;
+        
     }
     
     //external action: a request to add this to the actionQueue
@@ -127,7 +140,7 @@ export class Marker{
         geometry.applyMatrix4( new Matrix4().makeRotationX( Math.PI / 2 ) );
         geometry.applyMatrix4( new Matrix4().makeTranslation( 0,  0, height/2) );
         const material = new MeshPhongMaterial({
-            color: this.color,    // red (can also use a CSS color string here)
+            color: this.color || '#FF0000',    // red (can also use a CSS color string here)
             flatShading: false,
         });
         const mesh = new Mesh( geometry, material );
@@ -158,12 +171,6 @@ export class Marker{
     
     data(options){
         if(this.mesh){
-            const q = this.mesh.quaternion;
-            const angle = 2 * Math.acos(q.w);
-            const s = Math.sqrt(1 - q.w * q.w);
-            const x = Number.isNaN(q.x)?0:q.x / s;
-            const y = Number.isNaN(q.y)?0:q.y / s;
-            const z = Number.isNaN(q.z)?0:q.z / s;
             return {
                 id: this.id,
                 position: {
@@ -171,10 +178,11 @@ export class Marker{
                     y: this.mesh.position.y,
                     z: this.mesh.position.z
                 },
-                orientation: {
-                    x: x,
-                    y: y,
-                    z: z
+                quaternion: {
+                    w: this.mesh.quaternion.w,
+                    x: this.mesh.quaternion.x,
+                    y: this.mesh.quaternion.y,
+                    z: this.mesh.quaternion.z
                 }
             }
         }else{
@@ -185,10 +193,11 @@ export class Marker{
                     y: this.position.y,
                     z: this.position.z
                 },
-                orientation: {
-                    x: this.orientation.x,
-                    y: this.orientation.y,
-                    z: this.orientation.z
+                quaternion: {
+                    w: this.quaternion.w,
+                    x: this.quaternion.x,
+                    y: this.quaternion.y,
+                    z: this.quaternion.z
                 }
             }
         }
