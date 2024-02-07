@@ -18,12 +18,16 @@ export class Visualizer3D{
     constructor(){
         const scene = new Scene();
         
-        const horizonPlaneGeometry = new PlaneGeometry( 1024, 1024 );
-        horizonPlaneGeometry.translate( 8, 8, -0.001 );
+        //const horizonPlaneGeometry = new PlaneGeometry( 1024, 1024 );
+        //horizonPlaneGeometry.translate( 8, 8, -0.001 );
+        const horizonPlaneGeometry = new PlaneGeometry( 48, 48 );
+        horizonPlaneGeometry.translate( -16, -16, -0.001 );
         const horizonMaterial = new MeshPhongMaterial({
             color: "#00FF00", 
             flatShading: false
         });
+        const horizonPlane = new Mesh( horizonPlaneGeometry, horizonMaterial );
+        scene.add(horizonPlane);
         /*
         const horizonPlane = new Mesh( horizonPlaneGeometry, horizonMaterial );
         scene.add(horizonPlane);

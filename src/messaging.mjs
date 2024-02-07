@@ -44,13 +44,13 @@ export const messageHandler = (e)=>{
             case 'stop': //incoming stop execution loop after next turn
                 self.stop();
                 break;
-            case 'add-marker': //incoming marker definition
+            case 'add-marker':
                 const marker = new Marker(data.marker);
                 self.addMarker(marker);
                 break;
-            case 'move-marker': //incoming marker command definition
+            case 'move-marker':
                 break;
-            case 'marker-action': //incoming submesh definition
+            case 'marker-action': 
                 const action = data.action;
                 const subject = self.markers.find((marker)=> marker.id == action.id );
                 subject.action(action.name, action.options, action.target);
@@ -123,9 +123,11 @@ export const workerStateSetup = ()=>{
         self.running = true;
         self.clock.start();
         let delta = null;
+        const interval = 0;
         const main = ()=>{
             try{
                 delta = clock.getDelta();
+                delta = 0.00005;
                 evaluateTurn(delta);
                 currentState = markerStates();
                 if(currentState.markers.length){
@@ -134,13 +136,13 @@ export const workerStateSetup = ()=>{
                         state: currentState
                     }));
                 }
-                if(self.running) setTimeout(main, 0);
+                if(self.running) setTimeout(main, interval);
             }catch(ex){
                 console.log('MAIN LOOP EX', ex);
             }
         }
         //yielding
-        setTimeout(main, 0);
+        setTimeout(main, interval);
     };
     self.stop = ()=>{
         self.running = false;

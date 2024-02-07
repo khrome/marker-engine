@@ -78,11 +78,12 @@ export class Marker{
         console.log('MO', options);
         this.id = options.id || Math.floor(Math.random()*100000000000);
         this.values = options.values || (options.entity?options.entity.defaultValues():{
-            "movementSpeed" : 1,
-            "durability": 100,
-            "collisionRadius" : 0.5,
-            "turnSpeed" : 0.1,
-            "health" : 10
+            'movementSpeed' : 0.00001,
+            'durability': 100,
+            'collisionRadius' : 0.5,
+            'turnSpeed' : 0.00001,
+            'health' : 10,
+            'color' : '#00FF00'
         })
     }
     
@@ -140,7 +141,7 @@ export class Marker{
         geometry.applyMatrix4( new Matrix4().makeRotationX( Math.PI / 2 ) );
         geometry.applyMatrix4( new Matrix4().makeTranslation( 0,  0, height/2) );
         const material = new MeshPhongMaterial({
-            color: this.color || '#FF0000',    // red (can also use a CSS color string here)
+            color: this.color || this.values.color || '#FF0000',    // red (can also use a CSS color string here)
             flatShading: false,
         });
         const mesh = new Mesh( geometry, material );
@@ -250,6 +251,7 @@ export class Marker{
             //this.mesh.getWorldPosition(origin);
         }
         const movementSpeed = this.values.movementSpeed || 1;
+        console.log(movementSpeed)
         const maxDistance = movementSpeed * delta;
         const quaternion = new Quaternion();
         directionVector.applyQuaternion(this.mesh.quaternion);

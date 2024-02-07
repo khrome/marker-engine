@@ -29,6 +29,43 @@ export class Visualizer{
         });
     }
     
+    drawPoint(context, marker){
+        context.strokeStyle = '#000000'
+        context.fillStyle = marker.color || marker.values.color || '#FF0000';
+        context.beginPath();
+        const pos = {
+            x: (marker.mesh.position.x+16)*10, 
+            y: ((32 - marker.mesh.position.y)*10), 
+        };
+        //circle
+        context.arc(
+            pos.x, 
+            pos.y, 
+            10, 0, 2 * Math.PI
+        );
+        context.fill();
+        context.stroke();
+        //coords
+        context.fillStyle = '#000000'
+        context.fillText(
+            `(${
+                marker.mesh.position.x.toPrecision(2)
+            }, ${
+                marker.mesh.position.y.toPrecision(2)
+            })`, 
+            pos.x, 
+            pos.y
+        );
+        context.beginPath();
+        // angle
+        context.strokeStyle = '#FFFFFF'
+        const r = 20;
+        const angle = marker.mesh.rotation.z;
+        context.moveTo(pos.x, pos.y);
+        context.lineTo(pos.x + 20 * Math.cos(angle), pos.y + 20 * Math.sin(angle));
+        context.stroke();
+    }
+    
     draw(){
         const context = this.canvas.getContext('2d');
         context.fillStyle = '#FF0000';
@@ -38,14 +75,19 @@ export class Visualizer{
             this.canvas.width,
             this.canvas.height
         );
+        context.font = "12px serif";
+        context.beginPath();
+        context.moveTo(16*10, 0);
+        context.lineTo(16*10, 48*10);
+        context.moveTo(0, 16*10);
+        context.lineTo(48*10, 16*10);
+        context.moveTo(32*10, 0);
+        context.lineTo(32*10, 48*10);
+        context.moveTo(0, 32*10);
+        context.lineTo(48*10, 32*10);
+        context.stroke();
         this.markers.forEach((existingMarker)=>{
-            context.beginPath();
-            context.arc(
-                existingMarker.mesh.position.x, 
-                existingMarker.mesh.position.y, 
-                10, 0, 2 * Math.PI
-            );
-            context.stroke();
+            this.drawPoint(context, existingMarker);
         });
     }
     
