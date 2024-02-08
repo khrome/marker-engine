@@ -459,7 +459,7 @@
             const viz = new Visualizer();
             const viz2 = new Visualizer3D();
             viz.attach(vizEl);
-            //viz2.attach(viz2El);
+            viz2.attach(viz2El);
             const engine = new MarkerEngine();
             const markers = [];
             const addMarker = (x, y, marker)=>{
@@ -468,7 +468,7 @@
                 marker.mesh.position.x = x;
                 marker.mesh.position.y = y;
                 viz.addMarker(marker);
-                //viz2.addMarker(marker);
+                viz2.addMarker(marker);
             };
             (async()=>{
                 await engine.initialize();
@@ -491,7 +491,7 @@
                         y: (Math.random()*48 -16),
                         z: 0
                     };
-                    marker.action('moveTo', {}, position);
+                    marker.action('turn', {}, position);
                     addMarker(
                         position.x,
                         position.y,
@@ -540,6 +540,7 @@
                 )
                 
                 engine.on('state', (data)=>{
+                    //console.log(data);
                     viz.update(data);
                     viz2.update(data);
                 });
@@ -548,6 +549,8 @@
                 engine.start();
                 console.log('STARTZ')
             })();
+            
+            window.markerList = markers;
             
         </script>
 

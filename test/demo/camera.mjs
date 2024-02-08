@@ -21,9 +21,11 @@ export const create = (options={})=>{
             //controls.maxPolarAngle = Math.PI;
             //controls.maxDistance = 40;
             controls.maxDistance = 200;
-            camera.position.set( 0, -20, 8 );
-            camera.up.set(0, 1, 0);
+            camera.position.set( 8, 8, 60 );
+            //camera.up.set(0, 1, 0);
             controls.update();
+            camera.aspect = 1;
+            camera.updateProjectionMatrix();
             results.controls = controls;
         }
         return results;

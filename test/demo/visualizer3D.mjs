@@ -21,12 +21,14 @@ export class Visualizer3D{
         //const horizonPlaneGeometry = new PlaneGeometry( 1024, 1024 );
         //horizonPlaneGeometry.translate( 8, 8, -0.001 );
         const horizonPlaneGeometry = new PlaneGeometry( 48, 48 );
-        horizonPlaneGeometry.translate( -16, -16, -0.001 );
+        horizonPlaneGeometry.translate( 8, 8, -0.001 ); // 24-16 add half the size then offset
         const horizonMaterial = new MeshPhongMaterial({
-            color: "#00FF00", 
+            color: "#FFFFFF", 
             flatShading: false
         });
         const horizonPlane = new Mesh( horizonPlaneGeometry, horizonMaterial );
+        //horizonPlane.position.x += 24;
+        //horizonPlane.position.y += 24;
         scene.add(horizonPlane);
         /*
         const horizonPlane = new Mesh( horizonPlaneGeometry, horizonMaterial );
@@ -35,6 +37,7 @@ export class Visualizer3D{
         this.markers = [];
         
         const renderer = createRenderer();
+        renderer.setSize(480, 480, false);
         this.renderer = renderer;
         //container.append(renderer.domElement);
         const { ambient, directional } = createLights({ 

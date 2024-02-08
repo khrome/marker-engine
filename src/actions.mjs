@@ -29,6 +29,7 @@ export const pathTo = (delta, marker, target, options ={}, treadmill)  => { //me
 };
 //MoMa
 export const turn = (delta, marker, target, options ={}, treadmill)  => {
+    //console.log('turn')
     return marker.turnRight(delta, target, options, treadmill);
 };
 export const turnLeft = (delta, marker, target, options ={}, treadmill)  => {

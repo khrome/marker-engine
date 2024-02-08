@@ -3,6 +3,8 @@ import * as CANNON from './cannon-es.mjs';
 const {
     Body,
     Cylinder,
+    Quaternion,
+    Vec3,
     Sphere
 } = CANNON;
 
@@ -13,10 +15,10 @@ const {
     Mesh,
     Group,
     Raycaster,
+    Euler,
     LineSegments,
     EdgesGeometry,
     LineBasicMaterial,
-    Quaternion,
     Vector3
 } from '../node_modules/three/build/three.module.js';
 
@@ -235,6 +237,7 @@ export class Marker{
             }catch(ex){
                 console.log('EX', ex)
                 remainingTime = 0;
+                
             }
             //remainingTime = 0;
         }
@@ -323,17 +326,22 @@ export class Marker{
             if (targetAngle < 0) { targetAngle += twoPI; }
             if (targetAngle > twoPI) { targetAngle -= twoPI; }
             
+            const maxTurn = maxRotation * delta;
+            
             //const q = this.mesh.quaternion;
             //const angle = 2 * Math.acos(q.w);
             //const s = Math.sqrt(1 - q.w * q.w);
             //const x = q.x / s;
             //const y = q.y / s;
             //const z = this.mesh.quaternion.z / s;
-            const delta = quaternionToEuler(this.mesh.quaternion) - targetAngle;
+            //const delta = quaternionToEuler(this.mesh.quaternion) - targetAngle;
             //const delta = this.mesh.rotation.z - targetAngle;
-            const motion = direction * maxRotation;
+            const motion = direction * maxTurn;
+            var quaternionZ = new Quaternion();
+            quaternionZ.setFromAxisAngle(new Vec3(1,0,0), motion);
+            this.mesh.quaternion.vmult( quaternionZ ) 
             //console.log('turn angle', this.mesh.quaternion, this.mesh.rotation);
-            if(delta > maxRotation){
+            /*if(delta > maxRotation){
                 const z = quaternionToEuler(this.mesh.quaternion);
                 const newValue = z + motion;
                 if(newValue < 0){
@@ -358,7 +366,7 @@ export class Marker{
                 //this.mesh.rotation.z = targetAngle;
                 //TBD compute remaining time
                 return 0;
-            }
+            }*/
             return 0;
         }else{
             this.mesh.quaternion.setFromAxisAngle( 
