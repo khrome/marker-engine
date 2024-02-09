@@ -13,7 +13,7 @@ export const create = (options={})=>{
         results.ambient = ambient;
     }
     if(options.directional){
-        const light = new DirectionalLight('#663333', 0.5);
+        const light = new DirectionalLight('#FFFFFF', 1.5);
         if(options.directional.shadows) light.castShadow = true;
         if(options.directional.position){
             if(!options.directional.sourcePosition){

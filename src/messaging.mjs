@@ -18,6 +18,8 @@ import {
     Body
 } from './cannon-es.mjs';
 
+import { allTiles } from './tiles.mjs';
+
 //const self = {};
 
 export const messageHandler = (e)=>{
@@ -25,14 +27,22 @@ export const messageHandler = (e)=>{
     if(data.type){
         switch(data.type){
             case 'world': //incoming world definition
-                console.log('WORLD')
+                console.log('WORLD', data)
                 self.world = data.world;
                 self.physicalWorld = new World({
                     gravity: new Vec3(0, 0, -9.81)
                 });
+                self.onlyReturnDirtyObjects = data.world.onlyReturnDirtyObjects;
                 if(data.markerTypes){
                     
                 }
+                allTiles((tile)=>{
+                    console.log('TILE', tile);
+                    self.addSubmesh({
+                        tileX: tile.x,
+                        tileY: tile.y,
+                    });
+                });
                 break;
             case 'submesh': //incoming submesh definition
                 self.addSubmesh(data.submesh);
@@ -45,6 +55,7 @@ export const messageHandler = (e)=>{
                 self.stop();
                 break;
             case 'add-marker':
+                console.log('+', data.marker)
                 const marker = new Marker(data.marker);
                 self.addMarker(marker);
                 break;
@@ -82,9 +93,16 @@ export const workerStateSetup = ()=>{
         self.markers.push(marker);
         const physicsBody = marker.body();
         marker.mesh = physicsBody;
+        marker.mesh.position.x = marker.position.x;
+        marker.mesh.position.y = marker.position.y;
+        marker.mesh.position.z = marker.position.z;
+        marker.mesh.quaternion.x = marker.quaternion.x;
+        marker.mesh.quaternion.y = marker.quaternion.y;
+        marker.mesh.quaternion.z = marker.quaternion.z;
+        marker.mesh.quaternion.w = marker.quaternion.w;
         marker.normalizeMesh();
         //console.log('MESH', marker.mesh);
-        self.physicalWorld.addBody(physicsBody);
+        //self.physicalWorld.addBody(physicsBody);
         console.log('markerAdd')
     };
     const evaluateTurn = (delta)=>{
@@ -107,11 +125,17 @@ export const workerStateSetup = ()=>{
         let marker = null;
         for(let lcv=0; lcv < self.markers.length; lcv++){
             marker = self.markers[lcv];
-            if(marker.dirty){
+            const markerReturn = (
+                self.onlyReturnDirtyObjects === false ||
+                marker.dirty
+            )?true:false;
+            //console.log('??', markerReturn, self.onlyReturnDirtyObjects, marker.dirty)
+            if(markerReturn){
                 markers.push(marker.data());
                 marker.dirty = false;
             }
         }
+        //console.log('??', markers)
         return {
             markers
         };

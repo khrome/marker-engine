@@ -96,7 +96,7 @@
         "headless-firefox-test": "moka --server . --browser firefox test/test.mjs",
         "headless-safari-test": "moka --server . --browser safari test/test.mjs",
         "browser-test": "moka --server . --local-browser test/test.mjs",
-        "demo":"open http://localhost:8085; npx http-server -o . -p 8085 --cors",
+        "demo": "open http://localhost:8085; npx http-server -o . -p 8085 --cors",
         "container-test": "docker build . -t environment-safe-package.json -f ./containers/test.dockerfile; docker logs --follow \"$(docker run -d environment-safe-package.json)\"",
         "build-docs": "build-jsdoc docs",
         "build-types": "build-jsdoc types",
@@ -106,10 +106,13 @@
     "dependencies": {
         "@environment-safe/canvas": "^4.2.0",
         "@environment-safe/execution": "^0.0.3",
+        "bitwise-logger": "^0.0.4",
         "browser-or-node": "^2.1.1",
         "cannon-es": "^0.20.0",
         "extended-emitter": "^1.6.0",
+        "stats.js": "^0.17.0",
         "three": "^0.160.1",
+        "three-spritetext": "^1.8.2",
         "web-worker": "^1.3.0"
     }
 }

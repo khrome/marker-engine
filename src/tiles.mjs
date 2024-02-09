@@ -36,6 +36,12 @@ const neighbors = (location)=>{
     }
 };
 
+export const allTiles = (handler)=>{
+    Object.keys(direction).forEach((dir)=>{
+        handler(direction[dir]);
+    });
+};
+
 const direction = {
     current: { x: 0, y: 0 },
 
@@ -58,8 +64,8 @@ const direction = {
 
     northeast: { x:  1, y:  1 },
     northwest: { x: -1, y:  1 },
-    southeast: { x: 1, y: -1 },
-    southwest: { x:  -1, y: -1 }
+    southeast: { x:  1, y: -1 },
+    southwest: { x: -1, y: -1 }
 };
 direction[CURRENT] = direction.current;
 

@@ -68,6 +68,7 @@ export class Visualizer{
     
     draw(){
         const context = this.canvas.getContext('2d');
+        context.strokeStyle = '#000000';
         context.fillStyle = '#FF0000';
         context.fillRect(
             0, 
@@ -95,7 +96,7 @@ export class Visualizer{
         const drawLoop = ()=>{
             this.draw();
             if(turnHandler) turnHandler();
-            setTimeout(drawLoop, 500);
+            setTimeout(drawLoop, 0);
         };
         drawLoop();
     }

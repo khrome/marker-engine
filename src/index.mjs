@@ -20,6 +20,7 @@ import {
  * @typedef { object } JSON
  */
 import { Emitter } from 'extended-emitter';
+import { tools } from './development.mjs';
  
 export class MarkerEngine{
     constructor(options={}){
@@ -30,11 +31,18 @@ export class MarkerEngine{
     }
     
     addMarker(marker){
-        //add the marker to the 
-        const data = marker.data();
+        //add the marker to the
         marker.engine = this;
         marker.mesh = marker.model();
         marker.normalizeMesh();
+        const data = marker.data();
+        marker.mesh.position.x = marker.position.x;
+        marker.mesh.position.y = marker.position.y;
+        marker.mesh.position.z = marker.position.z;
+        marker.mesh.quaternion.x = marker.quaternion.x;
+        marker.mesh.quaternion.y = marker.quaternion.y;
+        marker.mesh.quaternion.z = marker.quaternion.z;
+        marker.mesh.quaternion.w = marker.quaternion.w;
         console.log('MESH', marker.mesh);
         this.worker.postMessage(JSON.stringify({
             type: 'add-marker',

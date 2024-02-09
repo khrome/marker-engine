@@ -9,13 +9,18 @@
             "visualizer3D": "./visualizer3D.mjs",
             "module": "../../node_modules/@open-automaton/moka/src/stub.mjs",
             "os": "../../node_modules/@open-automaton/moka/src/stub.mjs",
+            "stats.js": "../../node_modules/stats.js/src/Stats.js",
             "fs": "../../node_modules/@open-automaton/moka/src/stub.mjs",
             "path": "../../node_modules/@open-automaton/moka/src/stub.mjs",
             "@environment-safe/canvas": "../../node_modules/@environment-safe/canvas/./src/index.mjs",
             "@environment-safe/execution": "../../node_modules/@environment-safe/execution/./src/index.mjs",
             "browser-or-node": "../../node_modules/browser-or-node/src/index.js",
             "extended-emitter": "../../node_modules/extended-emitter/./extended-emitter.mjs",
+            "bitwise-logger": "../../node_modules/bitwise-logger/bitwise-logger.js",
             "three": "../../node_modules/three/./build/three.module.js",
+            "three-spritetext": "../../node_modules/three-spritetext/dist/three-spritetext.mjs",
+            "three/addons/controls/OrbitControls.js": "../../node_modules/three/examples/jsm/controls/OrbitControls.js",
+            "three/addons/geometries/TextGeometry.js":"../../node_modules/three/examples/jsm/geometries/TextGeometry.js",
             "web-worker": "../../node_modules/web-worker/./cjs/node.js",
             "@babel/cli": "../../node_modules/@babel/cli/",
             "@babel/core": "../../node_modules/@babel/core/./lib/index.js",
@@ -463,10 +468,10 @@
             const engine = new MarkerEngine();
             const markers = [];
             const addMarker = (x, y, marker)=>{
+                marker.position.x = x;
+                marker.position.y = y;
                 markers.push(marker);
                 engine.addMarker(marker);
-                marker.mesh.position.x = x;
-                marker.mesh.position.y = y;
                 viz.addMarker(marker);
                 viz2.addMarker(marker);
             };
@@ -485,6 +490,7 @@
                         })
                     )
                 }
+                //*
                 markers.forEach((marker)=>{
                     const position = {
                         x: (Math.random()*48 -16),
@@ -540,6 +546,17 @@
                 )
                 
                 engine.on('state', (data)=>{
+                    data.markers.forEach((marker)=>{
+                        //console.log('^', marker);
+                        /*
+                        if(
+                            Math.floor(marker.position.x) === 0 &&
+                            Math.floor(marker.position.z) === 0
+                        ){
+                            engine.stop();
+                            throw new Error('position reset');
+                        } //*/
+                    });
                     //console.log(data);
                     viz.update(data);
                     viz2.update(data);

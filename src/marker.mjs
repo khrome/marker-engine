@@ -10,11 +10,12 @@ const {
 
  import {
     CylinderGeometry,
-    Matrix4,
     MeshPhongMaterial,
     Mesh,
     Group,
+    Matrix4,
     Raycaster,
+    Quaternion as Quat3,
     Euler,
     LineSegments,
     EdgesGeometry,
@@ -22,9 +23,11 @@ const {
     Vector3
 } from '../node_modules/three/build/three.module.js';
 
+
 import * as actions from './actions.mjs';
 
 const twoPI = Math.PI * 2;
+const deg2rad = Math.PI/180
 
 const quaternionToEuler = (q)=>{
     const angle = 2 * Math.acos(q.w);
@@ -77,7 +80,6 @@ export class Marker{
         }else{
             this.quaternion = new Quaternion();
         }
-        console.log('MO', options);
         this.id = options.id || Math.floor(Math.random()*100000000000);
         this.values = options.values || (options.entity?options.entity.defaultValues():{
             'movementSpeed' : 0.00001,
@@ -245,6 +247,7 @@ export class Marker{
     }
     
     moveInOrientation(directionVector, delta=1, target, treadmill){
+        //*
         let origin = null;
         if(this.boundingBox){
             origin = this.boundingBox.getCenter()
@@ -263,13 +266,13 @@ export class Marker{
         let localTarget = target; //&& treadmill.treadmillPointFor(target);
         //Logger.log('mio-target', Logger.DEBUG, 'marker', localTarget);
         //Logger.log('mio-ray', Logger.DEBUG, 'marker', raycaster);
-        /*if(window.tools){
+        tools((tool)=>{
             Logger.log('mio-target', Logger.DEBUG, 'marker', localTarget);
             Logger.log('mio-ray', Logger.DEBUG, 'marker', raycaster);
-            //if(localTarget) window.tools.showPoint(localTarget, 'target', '#0000FF');
-            //if(target) window.tools.showPoint(target, 'target', '#000099');
-            //window.tools.showRay(raycaster, 'bearing-ray', '#000055');
-        }*/
+            //if(localTarget) tool.showPoint(localTarget, 'target', '#0000FF');
+            //if(target) tool.showPoint(target, 'target', '#000099');
+            //tool.showRay(raycaster, 'bearing-ray', '#000055');
+        });
         const markers = treadmill.activeMarkers();
         let lcv=0;
         for(;lcv < markers.length; lcv++){
@@ -292,7 +295,7 @@ export class Marker{
             raycaster.ray.at(maxDistance, result);
             this.moveTo(new Vector2(result.x, result.y));
             return -1;
-        }
+        } //*/
     }
     
     // all movement functions either proceed to the target or their movement max, whichever comes first
@@ -303,77 +306,75 @@ export class Marker{
     }
     
     backward(delta=1, target, options, treadmill){ // -y
-        return this.moveInOrientation(direction.backward.clone(), delta, target, treadmill);
+        //return this.moveInOrientation(direction.backward.clone(), delta, target, treadmill);
     }
     
     strafeRight(delta=1, target, options, treadmill){ // +x
-        return this.moveInOrientation(direction.right.clone(), delta, target, treadmill);
+        //return this.moveInOrientation(direction.right.clone(), delta, target, treadmill);
     }
     
     strafeLeft(delta=1, target, options, treadmill){ // -x
-        return this.moveInOrientation(direction.left.clone(), delta, target, treadmill);
+        //return this.moveInOrientation(direction.left.clone(), delta, target, treadmill);
     }
     
     turn(delta=1, direction, target, options, treadmill){
-        const turnSpeed = this.values.turnSpeed || 0.1;
+        //console.log('TURN')
+        const turnSpeed = this.values.turnSpeed || 0.00001;
         const maxRotation = turnSpeed * delta;
+        const position = new Vector3();
+        //const rotationMatrix = new Matrix4();
+        //const t = new Matrix4();
+        const targetV = new Vector3(
+            target.x, 
+            target.y, 
+            target.z
+        );
+        const positionV = new Vector3(
+            this.mesh.position.x, 
+            this.mesh.position.y, 
+            this.mesh.position.z
+        );
+        position.copy(target);
+        const speed = 2;
+        if(!this.lookTarget){
+            //rotationMatrix.lookAt( position, this.mesh.position, new Vector3(1, 0, 0) );
+            //targetQuaternion.setFromRotationMatrix( rotationMatrix );
+        }
+        //const clock = new THREE.Clock();
         if(target){
+            /*meshQuaternion.copy(this.mesh.quaternion);
+            if ( ! meshQuaternion.equals( targetQuaternion ) ) {
+            
+                const step = speed * delta;
+                meshQuaternion.rotateTowards( targetQuaternion, step );
+            
+            }
+            this.mesh.quaternion.copy(meshQuaternion);*/
             const localTarget = target; //treadmill.treadmillPointFor(target);
-            const raycaster = this.lookAt(localTarget);
-            const xDist = localTarget.x - this.mesh.position.x;
-            const yDist = localTarget.y - this.mesh.position.y;
-            let targetAngle = Math.atan2(yDist, xDist);
-            if (targetAngle < 0) { targetAngle += twoPI; }
-            if (targetAngle > twoPI) { targetAngle -= twoPI; }
+            let targetAngle = positionV.angleTo(targetV)
             
             const maxTurn = maxRotation * delta;
-            
-            //const q = this.mesh.quaternion;
-            //const angle = 2 * Math.acos(q.w);
-            //const s = Math.sqrt(1 - q.w * q.w);
-            //const x = q.x / s;
-            //const y = q.y / s;
-            //const z = this.mesh.quaternion.z / s;
-            //const delta = quaternionToEuler(this.mesh.quaternion) - targetAngle;
-            //const delta = this.mesh.rotation.z - targetAngle;
             const motion = direction * maxTurn;
-            var quaternionZ = new Quaternion();
-            quaternionZ.setFromAxisAngle(new Vec3(1,0,0), motion);
-            this.mesh.quaternion.vmult( quaternionZ ) 
-            //console.log('turn angle', this.mesh.quaternion, this.mesh.rotation);
-            /*if(delta > maxRotation){
-                const z = quaternionToEuler(this.mesh.quaternion);
-                const newValue = z + motion;
-                if(newValue < 0){
-                    this.mesh.quaternion.setFromAxisAngle( 
-                        new Vector3( 0, 0, 1 ), 
-                        (z + motion) + twoPI 
-                    );
-                    //this.mesh.rotation.z = (z + motion) + twoPI;
-                }else{
-                    this.mesh.quaternion.setFromAxisAngle( 
-                        new Vector3( 0, 0, 1 ), 
-                        (z + motion) % twoPI 
-                    );
-                    //this.mesh.rotation.z = (z + motion) % twoPI;
-                }
-                return -1;
+            const increment = Math.PI / 64;
+            const angle = ((this.turnAngle || 0) + increment) % twoPI;
+            console.log(angle, targetAngle, positionV, targetV)
+            if(false && angle > targetAngle){
+                //console.log('.')
+                this.mesh.quaternion.setFromAxisAngle(new Vec3(0,0,1), targetAngle);
+                const remainder = delta * 1/(targetAngle/angle);
+                this.turnAngle = null;
+                return remainder;
             }else{
-                this.mesh.quaternion.setFromAxisAngle( 
-                    new Vector3( 0, 0, 1 ), 
-                    targetAngle
-                );
-                //this.mesh.rotation.z = targetAngle;
-                //TBD compute remaining time
+                //console.log('+', this.lookAt(target))
+                this.mesh.quaternion.setFromAxisAngle(new Vec3(0,0,1), angle);
+                this.turnAngle = angle;
                 return 0;
-            }*/
-            return 0;
+            }
         }else{
             this.mesh.quaternion.setFromAxisAngle( 
                 new Vector3( 0, 0, 1 ), 
                 direction * maxRotation
             );
-            //this.mesh.rotation.z += direction * maxRotation;
             return 0;
         }
     }
@@ -387,7 +388,7 @@ export class Marker{
     }
     
     moveTo(point){
-        const from = this.mesh.position.clone()
+        /*const from = this.mesh.position.clone()
         this.mesh.position.set(point.x, point.y);
         if(this.body){
             this.body.position.set(point.x, point.y);
@@ -411,7 +412,7 @@ export class Marker{
                     )
                }
             });
-        }
+        }*/
         //if(this.animation) this.convertAnimation(point.x, point.y);
     }
     

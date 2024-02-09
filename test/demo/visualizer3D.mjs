@@ -12,10 +12,10 @@ import { Marker } from '../../src/index.mjs';
 import { create as createLights } from './lighting.mjs';
 import { create as createCamera } from './camera.mjs';
 import { create as createRenderer } from './renderer.mjs';
-
+import { enable, tools } from '../../src/development.mjs';
 
 export class Visualizer3D{
-    constructor(){
+    constructor(options={}){
         const scene = new Scene();
         
         //const horizonPlaneGeometry = new PlaneGeometry( 1024, 1024 );
@@ -61,6 +61,7 @@ export class Visualizer3D{
         
         this.scene = scene;
         this.camera = camera;
+        enable({ scene, renderer, light: directional , camera });
     }
     
     addMarker(incomingMarker){
@@ -69,6 +70,9 @@ export class Visualizer3D{
         )?incomingMarker:new Marker(incomingMarker);
         this.markers.push(marker);
         this.scene.add(marker.mesh);
+        tools((tool)=>{
+            tool.axes(marker.position)
+        });
         console.log('ADDED', marker.mesh, marker.mesh.position.x, marker.mesh.position.y)
     }
     
@@ -82,6 +86,7 @@ export class Visualizer3D{
                     existingMarker.mesh.quaternion.x = changedMarker.quaternion.x;
                     existingMarker.mesh.quaternion.y = changedMarker.quaternion.y;
                     existingMarker.mesh.quaternion.z = changedMarker.quaternion.z;
+                    existingMarker.mesh.quaternion.w = changedMarker.quaternion.w;
                 }
             });
         });
