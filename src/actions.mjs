@@ -1,3 +1,9 @@
+const quaternionToEulerZ = (q)=>{
+    const angle = 2 * Math.acos(q.w);
+    const s = Math.sqrt(1 - q.w * q.w);
+    const z = q.z / s;
+    return z;
+}
 export const moveTo = (delta, marker, target, options ={}, treadmill)  => { //meta
     //const direction  = dir.subVectors( point, this.mesh.position ).normalize();
     //var raycaster  = new Raycaster( this.mesh.position, direction );
@@ -30,7 +36,34 @@ export const pathTo = (delta, marker, target, options ={}, treadmill)  => { //me
 //MoMa
 export const turn = (delta, marker, target, options ={}, treadmill)  => {
     //console.log('turn')
-    return marker.turnRight(delta, target, options, treadmill);
+    let targetAngle = positionV.angleTo(targetV);
+    let currentAngle = quaternionToEulerZ(this.mesh.quaternion);
+    let remainder = null;
+    if(!this.turnDirection){
+        if(
+            currentAngle > targetAngle || // positive, but lower
+            (
+                currentAngle < targetAngle && // is higher
+                (currentAngle + Math.PI) < targetAngle //is higher than halfway around
+            )
+        ){
+            remainder = marker.turnLeft(delta, target, options, treadmill);
+            this.turnDirection = 'left';
+        }else{
+            remainder = marker.turnRight(delta, target, options, treadmill);
+            this.turnDirection = 'right';
+        }
+    }else{
+        if(this.turnDirection === 'left'){
+            remainder = marker.turnLeft(delta, target, options, treadmill);
+        }else{
+            remainder = marker.turnRight(delta, target, options, treadmill);
+        }
+    }
+    if(remainder){ //finished the turn
+        this.turnDirection = null;
+    }
+    return remainder;
 };
 export const turnLeft = (delta, marker, target, options ={}, treadmill)  => {
     return marker.turnLeft(delta, target, options, treadmill);

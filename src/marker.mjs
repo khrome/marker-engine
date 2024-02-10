@@ -29,11 +29,9 @@ import * as actions from './actions.mjs';
 const twoPI = Math.PI * 2;
 const deg2rad = Math.PI/180
 
-const quaternionToEuler = (q)=>{
+const quaternionToEulerZ = (q)=>{
     const angle = 2 * Math.acos(q.w);
     const s = Math.sqrt(1 - q.w * q.w);
-    //const x = q.x / s;
-    //const y = q.y / s;
     const z = q.z / s;
     return z;
 }
@@ -336,22 +334,10 @@ export class Marker{
         );
         position.copy(target);
         const speed = 2;
-        if(!this.lookTarget){
-            //rotationMatrix.lookAt( position, this.mesh.position, new Vector3(1, 0, 0) );
-            //targetQuaternion.setFromRotationMatrix( rotationMatrix );
-        }
-        //const clock = new THREE.Clock();
         if(target){
-            /*meshQuaternion.copy(this.mesh.quaternion);
-            if ( ! meshQuaternion.equals( targetQuaternion ) ) {
-            
-                const step = speed * delta;
-                meshQuaternion.rotateTowards( targetQuaternion, step );
-            
-            }
-            this.mesh.quaternion.copy(meshQuaternion);*/
+            let targetAngle = positionV.angleTo(targetV);
+            let currentAngle = quaternionToEulerZ(this.mesh.quaternion);
             const localTarget = target; //treadmill.treadmillPointFor(target);
-            let targetAngle = positionV.angleTo(targetV)
             
             const maxTurn = maxRotation * delta;
             const motion = direction * maxTurn;
