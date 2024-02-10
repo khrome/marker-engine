@@ -1,3 +1,4 @@
+import { Vector3 } from '../node_modules/three/build/three.module.js';
 const quaternionToEulerZ = (q)=>{
     const angle = 2 * Math.acos(q.w);
     const s = Math.sqrt(1 - q.w * q.w);
@@ -36,10 +37,21 @@ export const pathTo = (delta, marker, target, options ={}, treadmill)  => { //me
 //MoMa
 export const turn = (delta, marker, target, options ={}, treadmill)  => {
     //console.log('turn')
+    const targetV = new Vector3(
+        target.x, 
+        target.y, 
+        target.z
+    );
+    const meshPosition = marker.mesh?marker.mesh.position:this.position;
+    const positionV = new Vector3(
+        meshPosition.x, 
+        meshPosition.y, 
+        meshPosition.z
+    );
     let targetAngle = positionV.angleTo(targetV);
-    let currentAngle = quaternionToEulerZ(this.mesh.quaternion);
+    let currentAngle = quaternionToEulerZ(marker.mesh.quaternion);
     let remainder = null;
-    if(!this.turnDirection){
+    if(!marker.turnDirection){
         if(
             currentAngle > targetAngle || // positive, but lower
             (
@@ -48,20 +60,20 @@ export const turn = (delta, marker, target, options ={}, treadmill)  => {
             )
         ){
             remainder = marker.turnLeft(delta, target, options, treadmill);
-            this.turnDirection = 'left';
+            marker.turnDirection = 'left';
         }else{
             remainder = marker.turnRight(delta, target, options, treadmill);
-            this.turnDirection = 'right';
+            marker.turnDirection = 'right';
         }
     }else{
-        if(this.turnDirection === 'left'){
+        if(marker.turnDirection === 'left'){
             remainder = marker.turnLeft(delta, target, options, treadmill);
         }else{
             remainder = marker.turnRight(delta, target, options, treadmill);
         }
     }
     if(remainder){ //finished the turn
-        this.turnDirection = null;
+        marker.turnDirection = null;
     }
     return remainder;
 };

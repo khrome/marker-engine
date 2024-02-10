@@ -20,6 +20,7 @@ const {
     LineSegments,
     EdgesGeometry,
     LineBasicMaterial,
+    Vector2,
     Vector3
 } from '../node_modules/three/build/three.module.js';
 
@@ -27,7 +28,15 @@ const {
 import * as actions from './actions.mjs';
 
 const twoPI = Math.PI * 2;
-const deg2rad = Math.PI/180
+const deg2rad = Math.PI/180;
+const direction = {
+    right: new Vector3(0, 1, 0),
+    left: new Vector3(0, -1, 0),
+    forward: new Vector3(1, 0, 0), //TBD: ??
+    backward: new Vector3(-1, 0, 0)
+};
+let raycaster = new Raycaster();
+let result = new Vector3();
 
 const quaternionToEulerZ = (q)=>{
     const angle = 2 * Math.acos(q.w);
@@ -245,6 +254,7 @@ export class Marker{
     }
     
     moveInOrientation(directionVector, delta=1, target, treadmill){
+        console.log('MOVE')
         //*
         let origin = null;
         if(this.boundingBox){
@@ -264,13 +274,15 @@ export class Marker{
         let localTarget = target; //&& treadmill.treadmillPointFor(target);
         //Logger.log('mio-target', Logger.DEBUG, 'marker', localTarget);
         //Logger.log('mio-ray', Logger.DEBUG, 'marker', raycaster);
+        /*
         tools((tool)=>{
             Logger.log('mio-target', Logger.DEBUG, 'marker', localTarget);
             Logger.log('mio-ray', Logger.DEBUG, 'marker', raycaster);
             //if(localTarget) tool.showPoint(localTarget, 'target', '#0000FF');
             //if(target) tool.showPoint(target, 'target', '#000099');
             //tool.showRay(raycaster, 'bearing-ray', '#000055');
-        });
+        }); //*/
+        /* non-physics collision
         const markers = treadmill.activeMarkers();
         let lcv=0;
         for(;lcv < markers.length; lcv++){
@@ -280,6 +292,7 @@ export class Marker{
                 this.impact(markers[lcv], treadmill);
             }
         }
+        //*/
         if(
             target &&
              origin && 
@@ -335,16 +348,26 @@ export class Marker{
         position.copy(target);
         const speed = 2;
         if(target){
-            let targetAngle = positionV.angleTo(targetV);
+            //let targetAngle = positionV.angleTo(targetV);
+            let targetAngle = Math.atan2(targetV.y, targetV.x) - Math.atan2(positionV.y, positionV.x);
+            if (targetAngle < 0) { targetAngle += 2 * Math.PI; }
             let currentAngle = quaternionToEulerZ(this.mesh.quaternion);
             const localTarget = target; //treadmill.treadmillPointFor(target);
             
             const maxTurn = maxRotation * delta;
             const motion = direction * maxTurn;
-            const increment = Math.PI / 64;
-            const angle = ((this.turnAngle || 0) + increment) % twoPI;
-            console.log(angle, targetAngle, positionV, targetV)
-            if(false && angle > targetAngle){
+            const increment = direction * Math.PI / 64;
+            const angle = (twoPI + (this.turnAngle || 0) + increment) % twoPI; //make positive + wrap around
+            console.log(
+                '>>', 
+                (angle > targetAngle && this.turnAngle < targetAngle),
+                (angle < targetAngle && this.turnAngle > targetAngle),
+                angle, targetAngle, this.turnAngle, direction
+            )
+            if( //if this iteration crosses the boundary of the target
+                (angle > targetAngle && this.turnAngle < targetAngle) || //clockwise
+                (angle < targetAngle && this.turnAngle > targetAngle)
+            ){
                 //console.log('.')
                 this.mesh.quaternion.setFromAxisAngle(new Vec3(0,0,1), targetAngle);
                 const remainder = delta * 1/(targetAngle/angle);
