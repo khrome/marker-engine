@@ -88,6 +88,7 @@ export class Marker{
             this.quaternion = new Quaternion();
         }
         this.id = options.id || Math.floor(Math.random()*100000000000);
+        console.log('IV', options.values)
         this.values = options.values || (options.entity?options.entity.defaultValues():{
             'movementSpeed' : 0.00001,
             'durability': 100,
@@ -191,15 +192,15 @@ export class Marker{
             offset.y -= .002;
             offset.z -= .002;
             const axes = tool.axes(offset);
-            console.log('AXES', axes);
             object.add(axes);
         });
         return object;
     }
     
     data(options){
+        let result = null;
         if(this.mesh){
-            return {
+            result = {
                 id: this.id,
                 position: {
                     x: this.mesh.position.x,
@@ -214,7 +215,7 @@ export class Marker{
                 }
             }
         }else{
-            return {
+            result = {
                 id: this.id,
                 position: {
                     x: this.position.x,
@@ -229,6 +230,10 @@ export class Marker{
                 }
             }
         }
+        if(options && options.includeValues){
+            result.values = this.values;
+        }
+        return result;
     }
     
     act(delta){
@@ -327,8 +332,9 @@ export class Marker{
             this.mesh.position.copy(localTarget);
             return 0;
         }else{
+            //console.log(maxDistance, movementSpeed)
             raycaster.ray.at(maxDistance, result);
-            console.log(maxDistance, origin, result);
+            //console.log(maxDistance, origin, result);
             this.moveTo(new Vector2(result.x, result.y));
             return -1;
         } //*/
@@ -428,9 +434,12 @@ export class Marker{
     }
     
     moveTo(point){
+        //console.log('MOVE', point)
         //*
-        const from = this.mesh.position.clone()
-        this.mesh.position.set(point.x, point.y, point.z);
+        const from = this.mesh.position.clone();
+        this.mesh.position.x = point.x;
+        this.mesh.position.y = point.y;
+        //this.mesh.position.set(point.x, point.y, 0);
         /*if(this.body){
             this.body.position.set(point.x, point.y);
         }*/
@@ -438,7 +447,7 @@ export class Marker{
             const delta = {
                 x: point.x - from.x,
                 y: point.y - from.y
-            }
+            };
             this.linked.forEach((marker)=>{
                if(marker.moveTo){ //a marker
                    marker.moveTo(new Vector3(

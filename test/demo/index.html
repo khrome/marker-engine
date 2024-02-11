@@ -480,14 +480,14 @@
             (async()=>{
                 await engine.initialize();
                 //*
-                for(let lcv=0; lcv < 1; lcv++){
+                for(let lcv=0; lcv < 10; lcv++){
                     addMarker(
                         (Math.random()*48 -16),
                         (Math.random()*48 -16),
                         new Marker({
                             id : Math.floor(Math.random()*1000000000).toString(),
                             values: {
-                                movementSpeed: 0.5
+                                movementSpeed: 5
                             }
                         })
                     )

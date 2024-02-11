@@ -35,7 +35,7 @@ export class MarkerEngine{
         marker.engine = this;
         marker.mesh = marker.model();
         marker.normalizeMesh();
-        const data = marker.data();
+        const data = marker.data({includeValues: true});
         marker.mesh.position.x = marker.position.x;
         marker.mesh.position.y = marker.position.y;
         marker.mesh.position.z = marker.position.z;

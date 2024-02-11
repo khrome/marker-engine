@@ -151,7 +151,6 @@ export const workerStateSetup = ()=>{
         const main = ()=>{
             try{
                 delta = clock.getDelta();
-                delta = 0.00005;
                 evaluateTurn(delta);
                 currentState = markerStates();
                 if(currentState.markers.length){
