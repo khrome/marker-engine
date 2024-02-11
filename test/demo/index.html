@@ -440,13 +440,14 @@
             body{
                 margin:0px;
                 padding:0px;
+                width: 100vw;
             }
             #viz2{
                 position:absolute;
                 top:0px;
                 right:0px;
             }
-            #viz2 canvas{
+            #viz, #viz canvas, #viz2 canvas, #viz2{
                 height: 480px;
                 width: 480px;
             }
@@ -458,7 +459,8 @@
         <script type=module>
             import { Visualizer3D } from 'visualizer3D';
             import { Visualizer } from 'visualizer';
-            import { MarkerEngine, Marker } from 'marker-engine';
+            import { Vector3 } from 'three';
+            import { MarkerEngine, Marker, tools } from 'marker-engine';
             const vizEl = document.getElementById('viz');
             const viz2El = document.getElementById('viz2');
             const viz = new Visualizer();
@@ -497,57 +499,26 @@
                         y: (Math.random()*48 -16),
                         z: 0
                     };
-                    marker.action('moveTo', {}, position);
-                    addMarker(
-                        position.x,
-                        position.y,
-                        new Marker({
-                            id : Math.floor(Math.random()*1000000000).toString(),
-                            values: {
-                                movementSpeed: 1.0,
-                                color: '#00FF00'
-                            }
-                        })
-                    )
+                    //const action = 'moveTo';
+                    const action = 'turn';
+                    marker.action(action, {}, position);
                 });
-                //*/
-                addMarker(
-                    -16,
-                    -16,
-                    new Marker({
-                        id : Math.floor(Math.random()*1000000000).toString(),
-                        values: {
-                            movementSpeed: 1.0,
-                            color: '#0000FF'
-                        }
-                    })
-                )
-                addMarker(
-                    32,
-                    32,
-                    new Marker({
-                        id : Math.floor(Math.random()*1000000000).toString(),
-                        values: {
-                            movementSpeed: 1.0,
-                            color: '#0000FF'
-                        }
-                    })
-                )
-                addMarker(
-                    8,
-                    8,
-                    new Marker({
-                        id : Math.floor(Math.random()*1000000000).toString(),
-                        values: {
-                            movementSpeed: 1.0,
-                            color: '#0000FF'
-                        }
-                    })
-                )
+                
+                tools((tool)=>{
+                    tool.sceneAxes(new Vector3(0, 0, 0), 2);
+                    tool.sceneAxes(new Vector3(-16, -16, 0), 2);
+                    tool.sceneAxes(new Vector3(0, -16, 0), 2);
+                    tool.sceneAxes(new Vector3(-16, 0, 0), 2);
+                    tool.sceneAxes(new Vector3(16, 16, 0), 2);
+                    tool.sceneAxes(new Vector3(16, -16, 0), 2);
+                    tool.sceneAxes(new Vector3(-16, 16, 0), 2);
+                    tool.sceneAxes(new Vector3(0, 16, 0), 2);
+                    tool.sceneAxes(new Vector3(16, 0, 0), 2);
+                });
                 
                 engine.on('state', (data)=>{
                     data.markers.forEach((marker)=>{
-                        //console.log('^', marker);
+                        console.log('^', marker);
                         /*
                         if(
                             Math.floor(marker.position.x) === 0 &&

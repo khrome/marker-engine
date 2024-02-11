@@ -29,7 +29,7 @@ export class Visualizer{
         });
     }
     
-    drawPoint(context, marker){
+    drawPoint(context, marker, target){
         context.strokeStyle = '#000000'
         context.fillStyle = marker.color || marker.values.color || '#FF0000';
         context.beginPath();
@@ -37,6 +37,10 @@ export class Visualizer{
             x: (marker.mesh.position.x+16)*10, 
             y: ((32 - marker.mesh.position.y)*10), 
         };
+        const targ = {
+            x: (marker.target.x+16)*10, 
+            y: (32 - marker.target.y)*10
+        }
         //circle
         context.arc(
             pos.x, 
@@ -46,16 +50,45 @@ export class Visualizer{
         context.fill();
         context.stroke();
         //coords
+        context.fillStyle = '#FFFFFF';
+        const labelText = `(${
+            marker.mesh.position.x.toPrecision(2)
+        }, ${
+            marker.mesh.position.y.toPrecision(2)
+        })`;
+        //*
+        context.fillText(
+            labelText, 
+            pos.x-0.5, 
+            pos.y-0.5
+        );
+        context.fillText(
+            labelText, 
+            pos.x+0.5, 
+            pos.y+0.5
+        ); //*/
         context.fillStyle = '#000000'
         context.fillText(
-            `(${
-                marker.mesh.position.x.toPrecision(2)
-            }, ${
-                marker.mesh.position.y.toPrecision(2)
-            })`, 
+            labelText, 
             pos.x, 
             pos.y
         );
+        if(marker.target){
+            context.beginPath();
+            // angle
+            context.strokeStyle = '#999999'
+            //const r = Mat.sqrt(marker.target.x^2 + marker.target.y^2);
+            context.moveTo(pos.x, pos.y);
+            context.lineTo(targ.x, targ.y);
+            context.stroke();
+            context.beginPath();
+            context.strokeStyle = '#FFFFFF'
+            context.moveTo(targ.x-5, targ.y);
+            context.lineTo(targ.x+5, targ.y);
+            context.moveTo(targ.x, targ.y-5);
+            context.lineTo(targ.x, targ.y+5);
+            context.stroke();
+        }
         context.beginPath();
         // angle
         context.strokeStyle = '#FFFFFF'
@@ -77,6 +110,7 @@ export class Visualizer{
             this.canvas.height
         );
         context.font = "12px serif";
+        // grid
         context.beginPath();
         context.moveTo(16*10, 0);
         context.lineTo(16*10, 48*10);

@@ -106,7 +106,21 @@ export class Marker{
     
     //external action: a request to add this to the actionQueue
     action(name, options, target){
-        console.log('Action')
+        console.log('Action');
+        const targetV = new Vector3(
+            target.x, 
+            target.y, 
+            target.z
+        );
+        this.target = targetV;
+        tools((tool)=>{
+            const dir = new Vector3();
+            dir.subVectors( targetV, this.mesh.position ).normalize();
+            raycaster.ray.origin.copy(this.mesh.position);
+            raycaster.ray.direction.copy(dir);
+            tool.showRay(raycaster, `target-${this.id}`)
+            tool.sceneAxes(targetV);
+        });
         if(this.engine){
             //TODO: if we're already attached, remove
             //we're outside the worker and need to send an action through it
@@ -171,13 +185,15 @@ export class Marker{
                 new LineBasicMaterial({color: 0xFFFFFF})
             );
         }
-        /*tools((tool)=>{
+        tools((tool)=>{
             const offset = mesh.position.clone();
             offset.x -= .002;
             offset.y -= .002;
             offset.z -= .002;
-            object.add(tool.axes(offset));
-        });*/
+            const axes = tool.axes(offset);
+            console.log('AXES', axes);
+            object.add(axes);
+        });
         return object;
     }
     
@@ -330,6 +346,7 @@ export class Marker{
     
     turn(delta=1, direction, target, options, treadmill){
         //console.log('TURN')
+        
         const turnSpeed = this.values.turnSpeed || 0.00001;
         const maxRotation = turnSpeed * delta;
         const position = new Vector3();
@@ -345,6 +362,7 @@ export class Marker{
             this.mesh.position.y, 
             this.mesh.position.z
         );
+        
         position.copy(target);
         const speed = 2;
         if(target){

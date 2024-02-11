@@ -47,7 +47,9 @@ export const enable = ({ scene, clock, renderer, light, camera })=>{
 };
 
 export const tools = (handler)=>{
+    console.log('tools started');
     if(toolsInstance){
+        console.log('tools running');
         handler(toolsInstance);
     }
 };
@@ -100,17 +102,19 @@ export class DevelopmentTools{
         this.options.scene.add(this.cameraHelper)
     }
     
-    sceneAxes(point){
-        var axesHelper = new AxesHelper( 5 );
+    sceneAxes(point, size=5){
+        var axesHelper = new AxesHelper( size );
         axesHelper.setColors('red', 'blue', 'green');
-        if(point) axesHelper.position.set(point);
+        if(point) axesHelper.position.set(point.x, point.y, point.z);
+        console.log('added scene AX helper', axesHelper)
         this.options.scene.add( axesHelper );
     }
     
     axes(point){
         var axesHelper = new AxesHelper( 5 );
         axesHelper.setColors('red', 'blue', 'green');
-        if(point) axesHelper.position.set(point);
+        if(point) axesHelper.position.set(point.x, point.y, point.z+0.01);
+        console.log('added AX helper', axesHelper)
         return axesHelper;
     }
     
