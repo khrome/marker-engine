@@ -65,7 +65,7 @@ export const messageHandler = (e)=>{
                 const action = data.action;
                 const subject = self.markers.find((marker)=> marker.id == action.id );
                 subject.action(action.name, action.options, action.target);
-                //console.log(`object for id: ${data.action.id}`, subject, action);
+                console.log(`object for id: ${data.action.id}`, subject, action);
                 
         }
     }
@@ -173,6 +173,10 @@ export const workerStateSetup = ()=>{
         self.clock.stop();
     };
 }
-
-workerStateSetup();
-self.onmessage = messageHandler;
+try{
+    workerStateSetup();
+    self.onmessage = messageHandler;
+}catch(ex){
+    console.log('worker startup error', ex)
+}
+console.log('WORKER RUNNING')

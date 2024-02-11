@@ -24,7 +24,7 @@ const {
     Vector3
 } from '../node_modules/three/build/three.module.js';
 
-
+import { tools } from './development.mjs';
 import * as actions from './actions.mjs';
 
 const twoPI = Math.PI * 2;
@@ -102,11 +102,11 @@ export class Marker{
         this.mesh.position.x = this.position.x;
         this.mesh.position.y = this.position.y;
         this.mesh.position.z = this.position.z;
-        
     }
     
     //external action: a request to add this to the actionQueue
     action(name, options, target){
+        console.log('Action')
         if(this.engine){
             //TODO: if we're already attached, remove
             //we're outside the worker and need to send an action through it
@@ -120,6 +120,7 @@ export class Marker{
                 }
             };
             this.engine.worker.postMessage(JSON.stringify(action));
+            console.log('remote action', action)
         }else{
             //we're inside the engine and just queue an action directly
             this.actionQueue.push({
@@ -170,14 +171,13 @@ export class Marker{
                 new LineBasicMaterial({color: 0xFFFFFF})
             );
         }
-        /*if(window.tools){ //TODO: make these work
-            //console.log('added axes');
+        /*tools((tool)=>{
             const offset = mesh.position.clone();
             offset.x -= .002;
             offset.y -= .002;
             offset.z -= .002;
-            object.add(window.tools.axes(offset));
-        }*/
+            object.add(tool.axes(offset));
+        });*/
         return object;
     }
     
@@ -254,7 +254,7 @@ export class Marker{
     }
     
     moveInOrientation(directionVector, delta=1, target, treadmill){
-        console.log('MOVE')
+        //console.log('MOVE')
         //*
         let origin = null;
         if(this.boundingBox){
@@ -265,7 +265,7 @@ export class Marker{
             //this.mesh.getWorldPosition(origin);
         }
         const movementSpeed = this.values.movementSpeed || 1;
-        console.log(movementSpeed)
+        //console.log(movementSpeed)
         const maxDistance = movementSpeed * delta;
         const quaternion = new Quaternion();
         directionVector.applyQuaternion(this.mesh.quaternion);
@@ -274,8 +274,8 @@ export class Marker{
         let localTarget = target; //&& treadmill.treadmillPointFor(target);
         //Logger.log('mio-target', Logger.DEBUG, 'marker', localTarget);
         //Logger.log('mio-ray', Logger.DEBUG, 'marker', raycaster);
-        /*
-        tools((tool)=>{
+        //*
+        /*tools((tool)=>{
             Logger.log('mio-target', Logger.DEBUG, 'marker', localTarget);
             Logger.log('mio-ray', Logger.DEBUG, 'marker', raycaster);
             //if(localTarget) tool.showPoint(localTarget, 'target', '#0000FF');
@@ -397,12 +397,13 @@ export class Marker{
     }
     
     moveTo(point){
-        /*const from = this.mesh.position.clone()
+        //*
+        const from = this.mesh.position.clone()
         this.mesh.position.set(point.x, point.y);
-        if(this.body){
+        /*if(this.body){
             this.body.position.set(point.x, point.y);
-        }
-        if(this.linked.length){
+        }*/
+        if(this.linked && this.linked.length){
             const delta = {
                 x: point.x - from.x,
                 y: point.y - from.y
@@ -421,7 +422,7 @@ export class Marker{
                     )
                }
             });
-        }*/
+        } //*/
         //if(this.animation) this.convertAnimation(point.x, point.y);
     }
     

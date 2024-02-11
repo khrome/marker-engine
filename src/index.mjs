@@ -8,8 +8,9 @@ const ensureRequire = ()=> (!internalRequire) && (internalRequire = mod.createRe
 //*/
 import { Worker } from './worker.mjs';
 import { Marker } from './marker.mjs';
+import { tools, enable } from './development.mjs';
 
-export { Marker };
+export { Marker, tools, enable };
 
 import {
     Clock
@@ -20,7 +21,6 @@ import {
  * @typedef { object } JSON
  */
 import { Emitter } from 'extended-emitter';
-import { tools } from './development.mjs';
  
 export class MarkerEngine{
     constructor(options={}){
@@ -52,18 +52,22 @@ export class MarkerEngine{
     }
     
     async initialize(){
-        const url = new URL('./messaging.mjs', import.meta.url);
-        this.worker = new Worker(url, {type:'module'});
-        this.worker.onmessage = (e)=>{
-            const data = JSON.parse(e.data);
-            if(data.type === 'state'){
-                this.emit('state', data.state)
-            }
-        };
-        this.worker.postMessage(JSON.stringify({
-            type: 'world',
-            world: this.options
-        }));
+        try{
+            const url = new URL('./messaging.mjs', import.meta.url);
+            this.worker = new Worker(url, {type:'module'});
+            this.worker.onmessage = (e)=>{
+                const data = JSON.parse(e.data);
+                if(data.type === 'state'){
+                    this.emit('state', data.state)
+                }
+            };
+            this.worker.postMessage(JSON.stringify({
+                type: 'world',
+                world: this.options
+            }));
+        }catch(ex){
+            consle.log('WORKER INIT ERROR', ex)
+        }
     }
     
     start(){

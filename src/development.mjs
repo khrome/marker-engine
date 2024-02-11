@@ -1,4 +1,4 @@
-import Stats from 'stats.js';
+//import Stats from '../node_modules/stats.js/src/Stats.js';
 import { 
     CameraHelper, 
     Color, 
@@ -14,12 +14,15 @@ import {
     BufferGeometry, 
     Line, 
     ArrowHelper 
-} from 'three';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+} from '../node_modules/three/build/three.module.js';
+//import { TextGeometry } from '../node_modules/three/examples/jsm/geometries/TextGeometry.js';
 //import * as dat from 'dat.gui';
-import SpriteText from 'three-spritetext';
-import Logger from 'bitwise-logger';
+//import SpriteText from '../node_modules/three-spritetext/dist/three-spritetext.mjs';
+import Logger from '../node_modules/bitwise-logger/bitwise-logger.js';
 
+//export const tools=()=>{};
+//export const enable=()=>{};
+//*
 const kvs = {}
 
 const kv = (name)=> kvs[name] || '';
@@ -36,7 +39,7 @@ let point = {};
 let fonts = {};
 let textLabels = {};
 
-export { Logger };
+//export { Logger };
 
 let toolsInstance = null;
 export const enable = ({ scene, clock, renderer, light, camera })=>{
@@ -51,26 +54,31 @@ export const tools = (handler)=>{
 
 export class DevelopmentTools{
     constructor(options={}){
-        this.options = options;
-        this.panes = {};
-        this.stats = {};
-        const colors = {};
-        const colorFor = (name)=>{
-            if(!colors[name]) colors[name] = (Math.random() * 0xffffff);
-            return colors[name];
-        };
-        Logger.registerChannel({ // should work for any console.log() interface
-            log: (level, message, ...data)=>{
-                data.forEach((item)=>{
-                    if(item instanceof Raycaster){
-                        this.showRay(item, message, colorFor(message));
-                    }
-                    if(item instanceof Vector3){
-                        this.showPoint(item, message, colorFor(message));
-                    }
-                });
-            }
-        });
+        try{
+            this.options = options;
+            this.panes = {};
+            this.stats = {};
+            const colors = {};
+            const colorFor = (name)=>{
+                if(!colors[name]) colors[name] = (Math.random() * 0xffffff);
+                return colors[name];
+            };
+            //*
+            Logger.registerChannel({ // should work for any console.log() interface
+                log: (level, message, ...data)=>{
+                    data.forEach((item)=>{
+                        if(item instanceof Raycaster){
+                            this.showRay(item, message, colorFor(message));
+                        }
+                        if(item instanceof Vector3){
+                            this.showPoint(item, message, colorFor(message));
+                        }
+                    });
+                }
+            }); //*/
+        }catch(ex){
+            console.log('error initializing dev tools')
+        }
     }
     
     value(ob, value){
@@ -469,4 +477,4 @@ const activateTriangleSelection = (container, renderer, scene, loop, camera)=>{
             }
         }else loop.devtools.setDevOutput('face', { face: []});
     });
-}
+} //*/
