@@ -280,6 +280,7 @@ export class Marker{
             //origin = new Vector3();
             //this.mesh.getWorldPosition(origin);
         }
+        origin.z =0;
         const movementSpeed = this.values.movementSpeed || 1;
         //console.log(movementSpeed)
         const maxDistance = movementSpeed * delta;
@@ -309,6 +310,13 @@ export class Marker{
             }
         }
         //*/
+        /*
+        console.log(
+            target,
+            origin, 
+            localTarget, 
+            origin.distanceTo(localTarget), maxDistance
+        )//*/
         if(
             target &&
              origin && 
@@ -320,6 +328,7 @@ export class Marker{
             return 0;
         }else{
             raycaster.ray.at(maxDistance, result);
+            console.log(maxDistance, origin, result);
             this.moveTo(new Vector2(result.x, result.y));
             return -1;
         } //*/
@@ -367,21 +376,25 @@ export class Marker{
         const speed = 2;
         if(target){
             //let targetAngle = positionV.angleTo(targetV);
-            let targetAngle = Math.atan2(targetV.y, targetV.x) - Math.atan2(positionV.y, positionV.x);
+            //let targetAngle = Math.atan2(targetV.y, targetV.x) - Math.atan2(positionV.y, positionV.x);
+            let targetAngle = Math.atan2(targetV.y - positionV.y, targetV.x - positionV.x);
             if (targetAngle < 0) { targetAngle += 2 * Math.PI; }
+            //const targetAngle = this.targetAngle || positionV.angleTo(this.target)*180/Math.PI;
+            //if(!this.targetAngle) this.targetAngle = targetAngle
             let currentAngle = quaternionToEulerZ(this.mesh.quaternion);
             const localTarget = target; //treadmill.treadmillPointFor(target);
             
             const maxTurn = maxRotation * delta;
             const motion = direction * maxTurn;
             const increment = direction * Math.PI / 64;
-            const angle = (twoPI + (this.turnAngle || 0) + increment) % twoPI; //make positive + wrap around
+            const angle = (twoPI + (this.turnAngle || 0) + increment) % twoPI; //make positive
+            /*
             console.log(
                 '>>', 
                 (angle > targetAngle && this.turnAngle < targetAngle),
                 (angle < targetAngle && this.turnAngle > targetAngle),
                 angle, targetAngle, this.turnAngle, direction
-            )
+            ) //*/
             if( //if this iteration crosses the boundary of the target
                 (angle > targetAngle && this.turnAngle < targetAngle) || //clockwise
                 (angle < targetAngle && this.turnAngle > targetAngle)
@@ -417,7 +430,7 @@ export class Marker{
     moveTo(point){
         //*
         const from = this.mesh.position.clone()
-        this.mesh.position.set(point.x, point.y);
+        this.mesh.position.set(point.x, point.y, point.z);
         /*if(this.body){
             this.body.position.set(point.x, point.y);
         }*/

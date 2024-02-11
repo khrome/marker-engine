@@ -480,14 +480,14 @@
             (async()=>{
                 await engine.initialize();
                 //*
-                for(let lcv=0; lcv < 2; lcv++){
+                for(let lcv=0; lcv < 1; lcv++){
                     addMarker(
                         (Math.random()*48 -16),
                         (Math.random()*48 -16),
                         new Marker({
                             id : Math.floor(Math.random()*1000000000).toString(),
                             values: {
-                                movementSpeed: 0.00005
+                                movementSpeed: 0.5
                             }
                         })
                     )
@@ -499,8 +499,8 @@
                         y: (Math.random()*48 -16),
                         z: 0
                     };
-                    //const action = 'moveTo';
-                    const action = 'turn';
+                    const action = 'moveTo';
+                    //const action = 'turn';
                     marker.action(action, {}, position);
                 });
                 
@@ -518,7 +518,7 @@
                 
                 engine.on('state', (data)=>{
                     data.markers.forEach((marker)=>{
-                        console.log('^', marker);
+                        //console.log('^', marker);
                         /*
                         if(
                             Math.floor(marker.position.x) === 0 &&
