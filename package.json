@@ -110,6 +110,7 @@
         "browser-or-node": "^2.1.1",
         "cannon-es": "^0.20.0",
         "extended-emitter": "^1.6.0",
+        "random-seed-class": "^0.0.1",
         "stats.js": "^0.17.0",
         "three": "^0.160.1",
         "three-spritetext": "^1.8.2",

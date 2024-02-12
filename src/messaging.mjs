@@ -9,6 +9,10 @@ import {
 import {
     Marker
 } from './marker.mjs';
+//*
+import {
+    //Submesh
+} from './submesh.mjs'; //*/
 import { 
     World,
     Plane,
@@ -38,13 +42,15 @@ export const messageHandler = (e)=>{
                 }
                 allTiles((tile)=>{
                     console.log('TILE', tile);
-                    self.addSubmesh({
-                        tileX: tile.x,
-                        tileY: tile.y,
-                    });
+                    /*
+                        self.addSubmesh(new Submesh({
+                            x: tile.x,
+                            y: tile.y,
+                        }));
+                    }*/
                 });
                 break;
-            case 'submesh': //incoming submesh definition
+            case 'add-submesh': //incoming submesh definition
                 self.addSubmesh(data.submesh);
                 break;
             case 'start': //incoming start execution loop
@@ -74,18 +80,17 @@ export const messageHandler = (e)=>{
 
 export const workerStateSetup = ()=>{
     self.markers = [];
-    self.addSubmesh = (submeshData)=>{
-        if(submeshData.tileX && submeshData.tileY){
-            
-        }
-        const physicalGroundMaterial = new Material();
-        const physicsMesh = new Body({
-            shape: new Plane(),
-            //new CANNON.Trimesh(submesh.coords, submesh.coords.map((item, index)=>index)),
-            type: Body.STATIC,
-            material: physicalGroundMaterial
-            //mass:5
-        });
+    self.addSubmesh = (submesh)=>{
+        const physicsBody = submesh.body();
+        marker.mesh = physicsBody;
+        submesh.mesh.position.x = submesh.position.x;
+        submesh.mesh.position.y = submesh.position.y;
+        submesh.mesh.position.z = submesh.position.z;
+        submesh.mesh.quaternion.x = submesh.quaternion.x;
+        submesh.mesh.quaternion.y = submesh.quaternion.y;
+        submesh.mesh.quaternion.z = submesh.quaternion.z;
+        submesh.mesh.quaternion.w = submesh.quaternion.w;
+        console.log('submeshAdd')
     };
     self.addMarker = (markerData)=>{
         //todo: look up against class index

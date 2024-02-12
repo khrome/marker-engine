@@ -8,6 +8,7 @@ const ensureRequire = ()=> (!internalRequire) && (internalRequire = mod.createRe
 //*/
 import { Worker } from './worker.mjs';
 import { Marker } from './marker.mjs';
+import { allTiles } from './tiles.mjs';
 import { tools, enable } from './development.mjs';
 
 export { Marker, tools, enable };
@@ -26,6 +27,10 @@ export class MarkerEngine{
     constructor(options={}){
         this.options = options;
         this.emitter = new Emitter();
+        this.tileOffsets = {
+            x: this.options.x || 0,
+            y: this.options.y || 0
+        };
         (this.emitter).onto(this);
         this.submeshes = {};
     }
@@ -48,7 +53,26 @@ export class MarkerEngine{
             type: 'add-marker',
             marker: data
         }));
-        console.log('added')
+        console.log('added marker')
+    }
+    
+    addSubmesh(submesh){
+        //add the marker to the
+        submesh.engine = this;
+        submesh.mesh = submesh.model();
+        const data = submesh.data();
+        submesh.mesh.position.x = submesh.x*16;
+        submesh.mesh.position.y = submesh.y*16;
+        submesh.mesh.position.z = 0;
+        submesh.mesh.quaternion.x = 0;
+        submesh.mesh.quaternion.y = 0;
+        submesh.mesh.quaternion.z = 0;
+        submesh.mesh.quaternion.w = 0;
+        this.worker.postMessage(JSON.stringify({
+            type: 'add-submesh',
+            submesh: data
+        }));
+        console.log('added submesh')
     }
     
     async initialize(){
@@ -65,6 +89,7 @@ export class MarkerEngine{
                 type: 'world',
                 world: this.options
             }));
+            
         }catch(ex){
             consle.log('WORKER INIT ERROR', ex)
         }

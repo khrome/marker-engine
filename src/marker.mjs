@@ -107,7 +107,6 @@ export class Marker{
     
     //external action: a request to add this to the actionQueue
     action(name, options, target){
-        console.log('Action');
         const targetV = new Vector3(
             target.x, 
             target.y, 

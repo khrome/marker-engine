@@ -47,9 +47,7 @@ export const enable = ({ scene, clock, renderer, light, camera })=>{
 };
 
 export const tools = (handler)=>{
-    console.log('tools started');
     if(toolsInstance){
-        console.log('tools running');
         handler(toolsInstance);
     }
 };

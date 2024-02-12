@@ -38,7 +38,7 @@ const neighbors = (location)=>{
 
 export const allTiles = (handler)=>{
     Object.keys(direction).forEach((dir)=>{
-        handler(direction[dir]);
+        handler(direction[dir], dir);
     });
 };
 
