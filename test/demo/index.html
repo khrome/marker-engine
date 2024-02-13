@@ -478,6 +478,7 @@
                 viz2.addMarker(marker);
             };
             engine.on('submesh', (submesh)=>{
+                console.log('ADDED SUBMESH', submesh.x, submesh.y )
                 viz2.addSubmesh(submesh);
             });
             (async()=>{

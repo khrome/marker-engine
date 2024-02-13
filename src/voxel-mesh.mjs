@@ -13,6 +13,7 @@ import {
     MeshLambertMaterial,
     DoubleSide
 } from "../node_modules/three/build/three.module.js";
+import { ValueNoise } from './perlin.mjs'
 function createGroundMesh(coords, groundMaterial) {
     const geometry = new BufferGeometry();
 
@@ -101,11 +102,13 @@ class VoxelLayer {
     this.positions = [];
     this.random = new Random(seed);
     this.offset = offset;
+    this.perlin = new ValueNoise();
   }
   // Getter
   getHeightAt(x, y){
     console.log("sx,sy", x, y);
-    return this.getPosition(x * this.offset + y);
+    this.perlin.evalXY(x,y);
+    //return this.getPosition(x * this.offset + y);
   }
 
   getPosition(pos){

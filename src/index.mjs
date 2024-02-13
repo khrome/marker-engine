@@ -9,7 +9,7 @@ const ensureRequire = ()=> (!internalRequire) && (internalRequire = mod.createRe
 import { Worker } from './worker.mjs';
 import { Marker } from './marker.mjs';
 import { Submesh } from './submesh.mjs';
-import { allTiles } from './tiles.mjs';
+import { allTiles, weldTreadmill } from './tiles.mjs';
 import { tools, enable } from './development.mjs';
 
 export { Marker, tools, enable };
@@ -37,8 +37,16 @@ export class MarkerEngine{
         this.on('submesh-data', (submeshData)=>{
             const submesh = new Submesh(submeshData);
             this.addSubmesh(submesh);
-            this.emit('submesh', submesh);
-            console.log('INCOMING SUBMESH', submesh)
+            this.submeshes[submeshData.location] = submesh;
+            if(Object.keys(this.submeshes).length === 9){
+                console.log('ALL SUBMESHES', this.submeshes)
+                weldTreadmill(this.submeshes);
+                Object.keys(this.submeshes).forEach((key)=>{
+                    this.emit('submesh', this.submeshes[key]);
+                });
+                this.emit('load', {});
+                //now it's time to weld the submeshes edge-to-edge
+            }
         })
     }
     

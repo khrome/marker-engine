@@ -10,16 +10,22 @@ export const SOUTHWEST = Symbol.for('southwest');
 
 export const CURRENT = Symbol.for('current'); 
 
-const codirections = [
+const codirectionsBySymbol = [
     [NORTHWEST, NORTH,   NORTHEAST],
     [WEST,      CURRENT, EAST     ],
     [SOUTHWEST, SOUTH,   SOUTHEAST] 
 ];
 
+const codirectionsByText = [
+    ['northwest', 'north',   'northeast'],
+    ['west',      'current', 'east'     ],
+    ['southwest', 'south',   'southeast'] 
+];
+
 const neighbors = (location)=>{
     let x = -1;
     let y = -1;
-    codirections.forEach((row, yIndex)=>{
+    codirectionsByText.forEach((row, yIndex)=>{
         row.forEach((value, xIndex)=>{
             if(value === location){
                 x = xIndex;
@@ -29,11 +35,24 @@ const neighbors = (location)=>{
     });
     if(x === -1 || y === -1) throw new Error('location not found: '+location)
     return {
-        north: codirections[y-1] && codirections[y-1][x],
-        south: codirections[y+1] && codirections[y+1][x],
-        east: codirections[y][x+1],
-        west: codirections[y][x-1],
+        north: codirectionsByText[y-1] && codirectionsByText[y-1][x],
+        south: codirectionsByText[y+1] && codirectionsByText[y+1][x],
+        east: codirectionsByText[y][x+1],
+        west: codirectionsByText[y][x-1],
     }
+};
+
+export const weldTreadmill = (submeshIndex)=>{
+    const directions =  codirectionsByText[0].concat(codirectionsByText[1]).concat(codirectionsByText[2]);
+    directions.reverse().forEach((dir)=>{
+        const local = neighbors(dir);
+        if(local.north){ //weld the northern seam
+            submeshIndex[dir].weld(submeshIndex[local.north], 'bottom');
+        }
+        if(local.east){ //weld the eastern seam
+            submeshIndex[dir].weld(submeshIndex[local.east], 'left');
+        }
+    })
 };
 
 export const allTiles = (handler)=>{
@@ -83,8 +102,8 @@ direction[WEST] = direction.west;
 export class Tile {
     static offset = direction;
     static neighbors = neighbors;
-    static groups = codirections;
-    static list = codirections[0].concat(codirections[1]).concat(codirections[2]);
+    static groups = codirectionsByText;
+    static list = codirectionsByText[0].concat(codirectionsByText[1]).concat(codirectionsByText[2]);
 }
 
 Tile.CURRENT = direction.current;

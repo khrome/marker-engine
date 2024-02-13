@@ -49,7 +49,9 @@ export const messageHandler = (e)=>{
                         y: tile.y,
                     });
                     self.addSubmesh(submesh);
-                    submeshData.push(submesh.data());
+                    const data = submesh.data();
+                    data.location = location
+                    submeshData.push(data);
                 });
                 self.postMessage(JSON.stringify({
                     type:'submesh-update', 
@@ -89,11 +91,9 @@ export const workerStateSetup = ()=>{
         const physicsBody = submesh.body();
         self.physicalWorld.addBody(physicsBody);
         submesh.mesh = physicsBody;
-        console.log('****', submesh.mesh.position)
         submesh.mesh.position.x = submesh.x * 16;
         submesh.mesh.position.y = submesh.y * 16;
         submesh.mesh.position.z = 0;
-        console.log('submeshAdd')
     };
     self.addMarker = (markerData)=>{
         //todo: look up against class index
@@ -111,7 +111,6 @@ export const workerStateSetup = ()=>{
         marker.normalizeMesh();
         //console.log('MESH', marker.mesh);
         //self.physicalWorld.addBody(physicsBody);
-        console.log('markerAdd')
     };
     const evaluateTurn = (delta)=>{
         // physics tick
