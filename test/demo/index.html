@@ -477,65 +477,71 @@
                 viz.addMarker(marker);
                 viz2.addMarker(marker);
             };
+            engine.on('submesh', (submesh)=>{
+                viz2.addSubmesh(submesh);
+            });
             (async()=>{
-                await engine.initialize();
-                //*
-                for(let lcv=0; lcv < 10; lcv++){
-                    addMarker(
-                        (Math.random()*48 -16),
-                        (Math.random()*48 -16),
-                        new Marker({
-                            id : Math.floor(Math.random()*1000000000).toString(),
-                            values: {
-                                movementSpeed: 5
-                            }
-                        })
-                    )
-                }
-                //*
-                markers.forEach((marker)=>{
-                    const position = {
-                        x: (Math.random()*48 -16),
-                        y: (Math.random()*48 -16),
-                        z: 0
-                    };
-                    const action = 'moveTo';
-                    //const action = 'turn';
-                    marker.action(action, {}, position);
-                });
-                
-                tools((tool)=>{
-                    tool.sceneAxes(new Vector3(0, 0, 0), 2);
-                    tool.sceneAxes(new Vector3(-16, -16, 0), 2);
-                    tool.sceneAxes(new Vector3(0, -16, 0), 2);
-                    tool.sceneAxes(new Vector3(-16, 0, 0), 2);
-                    tool.sceneAxes(new Vector3(16, 16, 0), 2);
-                    tool.sceneAxes(new Vector3(16, -16, 0), 2);
-                    tool.sceneAxes(new Vector3(-16, 16, 0), 2);
-                    tool.sceneAxes(new Vector3(0, 16, 0), 2);
-                    tool.sceneAxes(new Vector3(16, 0, 0), 2);
-                });
-                
-                engine.on('state', (data)=>{
-                    data.markers.forEach((marker)=>{
-                        //console.log('^', marker);
-                        /*
-                        if(
-                            Math.floor(marker.position.x) === 0 &&
-                            Math.floor(marker.position.z) === 0
-                        ){
-                            engine.stop();
-                            throw new Error('position reset');
-                        } //*/
+                try{
+                    await engine.initialize();
+                    //*
+                    for(let lcv=0; lcv < 10; lcv++){
+                        addMarker(
+                            (Math.random()*48 -16),
+                            (Math.random()*48 -16),
+                            new Marker({
+                                id : Math.floor(Math.random()*1000000000).toString(),
+                                values: {
+                                    movementSpeed: 5
+                                }
+                            })
+                        )
+                    }
+                    //*
+                    markers.forEach((marker)=>{
+                        const position = {
+                            x: (Math.random()*48 -16),
+                            y: (Math.random()*48 -16),
+                            z: 0
+                        };
+                        const action = 'moveTo';
+                        //const action = 'turn';
+                        marker.action(action, {}, position);
                     });
-                    //console.log(data);
-                    viz.update(data);
-                    viz2.update(data);
-                });
-                viz.start();
-                viz2.start();
-                engine.start();
-                console.log('STARTZ')
+                    
+                    tools((tool)=>{
+                        tool.sceneAxes(new Vector3(0, 0, 0), 2);
+                        tool.sceneAxes(new Vector3(-16, -16, 0), 2);
+                        tool.sceneAxes(new Vector3(0, -16, 0), 2);
+                        tool.sceneAxes(new Vector3(-16, 0, 0), 2);
+                        tool.sceneAxes(new Vector3(16, 16, 0), 2);
+                        tool.sceneAxes(new Vector3(16, -16, 0), 2);
+                        tool.sceneAxes(new Vector3(-16, 16, 0), 2);
+                        tool.sceneAxes(new Vector3(0, 16, 0), 2);
+                        tool.sceneAxes(new Vector3(16, 0, 0), 2);
+                    });
+                    
+                    engine.on('state', (data)=>{
+                        data.markers.forEach((marker)=>{
+                            //console.log('^', marker);
+                            /*
+                            if(
+                                Math.floor(marker.position.x) === 0 &&
+                                Math.floor(marker.position.z) === 0
+                            ){
+                                engine.stop();
+                                throw new Error('position reset');
+                            } //*/
+                        });
+                        //console.log(data);
+                        viz.update(data);
+                        viz2.update(data);
+                    });
+                    viz.start();
+                    viz2.start();
+                    engine.start();
+                }catch(ex){
+                    console.log('$$$', ex);
+                }
             })();
             
             window.markerList = markers;

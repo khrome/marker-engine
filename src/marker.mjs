@@ -88,7 +88,6 @@ export class Marker{
             this.quaternion = new Quaternion();
         }
         this.id = options.id || Math.floor(Math.random()*100000000000);
-        console.log('IV', options.values)
         this.values = options.values || (options.entity?options.entity.defaultValues():{
             'movementSpeed' : 0.00001,
             'durability': 100,

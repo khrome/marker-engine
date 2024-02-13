@@ -5,6 +5,7 @@ const {
     Cylinder,
     Quaternion,
     Trimesh,
+    Material,
     Vec3,
     Sphere
 } = CANNON;
@@ -34,6 +35,7 @@ const defaultVoxelMesh = createVoxelMesh('test-seed', 16);
 //*
 export class Submesh{
     constructor(options={}){
+        console.log('>>>')
         this.x = options.x || 0;
         this.y = options.y || 0;
         this.voxelData = options.voxels || [];
@@ -57,31 +59,44 @@ export class Submesh{
     }
     
     coordinates(){
-        if(!this.voxelData){
+        if(!this.voxelData.length){
             this.voxelData = this.voxels();
         }
         return this.voxelMesh.getCoordsFromVoxels(this.x, this.y, 2, this.voxelData);
     }
     
     model(){
+        const groundMaterial = new MeshPhongMaterial({
+            color: "#00FF00", 
+            flatShading: false
+        });
         const coords = this.coordinates();
-        return this.voxelMesh.getSubmesh(this.x, this.y, 2, coords, material.visual);
+        const model = this.voxelMesh.getSubmesh(this.x, this.y, 2, coords, groundMaterial);
+        
+        console.log('###', model)
+        return model;
     }
     
     body(){
+        const groundMaterial = new Material('ground')
         const coords = this.coordinates();
         const body = new Body({
             shape: new Trimesh(coords, coords.map((item, index)=>index)),
             type: Body.STATIC,
-            material: material.physical
+            material: groundMaterial
             //mass:5
         });
         return body;
     }
     
     data(){
+        if(!this.voxelData.length){
+            this.voxelData = this.voxels();
+        }
         return {
-            voxels: (this.voxelData || this.voxels()),
+            voxels: this.voxelData,
+            x: this.x,
+            y: this.y,
             position:{
                 x: this.mesh.position.x,
                 y: this.mesh.position.y,

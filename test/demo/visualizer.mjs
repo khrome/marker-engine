@@ -93,10 +93,10 @@ export class Visualizer{
         // angle
         context.strokeStyle = '#FFFFFF'
         const r = 20;
-        const angle = marker.mesh.rotation.z;
-        context.moveTo(pos.x, pos.y);
-        context.lineTo(pos.x + 20 * Math.cos(angle), pos.y + 20 * Math.sin(angle));
-        context.stroke();
+        //const angle = marker.mesh.rotation.z;
+        //context.moveTo(pos.x, pos.y);
+        //context.lineTo(pos.x + 20 * Math.cos(angle), pos.y + 20 * Math.sin(angle));
+        //context.stroke();
     }
     
     draw(){

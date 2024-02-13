@@ -11,7 +11,7 @@ import {
 } from './marker.mjs';
 //*
 import {
-    //Submesh
+    Submesh
 } from './submesh.mjs'; //*/
 import { 
     World,
@@ -40,18 +40,24 @@ export const messageHandler = (e)=>{
                 if(data.markerTypes){
                     
                 }
-                allTiles((tile)=>{
+                let submeshData = [];
+                let submesh = null;
+                allTiles((tile, location)=>{
                     console.log('TILE', tile);
-                    /*
-                        self.addSubmesh(new Submesh({
-                            x: tile.x,
-                            y: tile.y,
-                        }));
-                    }*/
+                    submesh = new Submesh({
+                        x: tile.x,
+                        y: tile.y,
+                    });
+                    self.addSubmesh(submesh);
+                    submeshData.push(submesh.data());
                 });
+                self.postMessage(JSON.stringify({
+                    type:'submesh-update', 
+                    submesh: submeshData
+                }));
                 break;
             case 'add-submesh': //incoming submesh definition
-                self.addSubmesh(data.submesh);
+                //self.addSubmesh(data.submesh);
                 break;
             case 'start': //incoming start execution loop
                 console.log('START')
@@ -61,7 +67,6 @@ export const messageHandler = (e)=>{
                 self.stop();
                 break;
             case 'add-marker':
-                console.log('+', data.marker)
                 const marker = new Marker(data.marker);
                 self.addMarker(marker);
                 break;
@@ -82,14 +87,12 @@ export const workerStateSetup = ()=>{
     self.markers = [];
     self.addSubmesh = (submesh)=>{
         const physicsBody = submesh.body();
-        marker.mesh = physicsBody;
-        submesh.mesh.position.x = submesh.position.x;
-        submesh.mesh.position.y = submesh.position.y;
-        submesh.mesh.position.z = submesh.position.z;
-        submesh.mesh.quaternion.x = submesh.quaternion.x;
-        submesh.mesh.quaternion.y = submesh.quaternion.y;
-        submesh.mesh.quaternion.z = submesh.quaternion.z;
-        submesh.mesh.quaternion.w = submesh.quaternion.w;
+        self.physicalWorld.addBody(physicsBody);
+        submesh.mesh = physicsBody;
+        console.log('****', submesh.mesh.position)
+        submesh.mesh.position.x = submesh.x * 16;
+        submesh.mesh.position.y = submesh.y * 16;
+        submesh.mesh.position.z = 0;
         console.log('submeshAdd')
     };
     self.addMarker = (markerData)=>{

@@ -7,7 +7,7 @@ import {
     MeshPhongMaterial
 } from 'three';
 
-import { Marker } from '../../src/index.mjs';
+import { Marker, Submesh } from '../../src/index.mjs';
 
 import { create as createLights } from './lighting.mjs';
 import { create as createCamera } from './camera.mjs';
@@ -20,7 +20,7 @@ export class Visualizer3D{
         
         //const horizonPlaneGeometry = new PlaneGeometry( 1024, 1024 );
         //horizonPlaneGeometry.translate( 8, 8, -0.001 );
-        const horizonPlaneGeometry = new PlaneGeometry( 48, 48 );
+        /*const horizonPlaneGeometry = new PlaneGeometry( 48, 48 );
         horizonPlaneGeometry.translate( 8, 8, -0.001 ); // 24-16 add half the size then offset
         const horizonMaterial = new MeshPhongMaterial({
             color: "#FFFFFF", 
@@ -29,7 +29,7 @@ export class Visualizer3D{
         const horizonPlane = new Mesh( horizonPlaneGeometry, horizonMaterial );
         //horizonPlane.position.x += 24;
         //horizonPlane.position.y += 24;
-        scene.add(horizonPlane);
+        scene.add(horizonPlane);*/
         /*
         const horizonPlane = new Mesh( horizonPlaneGeometry, horizonMaterial );
         scene.add(horizonPlane);
@@ -75,6 +75,21 @@ export class Visualizer3D{
         });
         console.log('ADDED', marker.mesh, marker.mesh.position.x, marker.mesh.position.y)
     }
+    
+    addSubmesh(incomingSubmesh){
+        const submesh = (
+            incomingSubmesh instanceof Submesh
+        )?incomingSubmesh:new Submesh(incomingSubmesh);
+        if(!submesh.mesh){
+            submesh.mesh = submesh.model();
+        }
+        //this.markers.push(submesh);
+        this.scene.add(submesh.mesh);
+        tools((tool)=>{
+            tool.axes(submesh.position, 2)
+        });
+    }
+    
     
     update(states){
         states.markers.forEach((changedMarker)=>{

@@ -8,6 +8,7 @@ const ensureRequire = ()=> (!internalRequire) && (internalRequire = mod.createRe
 //*/
 import { Worker } from './worker.mjs';
 import { Marker } from './marker.mjs';
+import { Submesh } from './submesh.mjs';
 import { allTiles } from './tiles.mjs';
 import { tools, enable } from './development.mjs';
 
@@ -33,6 +34,12 @@ export class MarkerEngine{
         };
         (this.emitter).onto(this);
         this.submeshes = {};
+        this.on('submesh-data', (submeshData)=>{
+            const submesh = new Submesh(submeshData);
+            this.addSubmesh(submesh);
+            this.emit('submesh', submesh);
+            console.log('INCOMING SUBMESH', submesh)
+        })
     }
     
     addMarker(marker){
@@ -84,6 +91,12 @@ export class MarkerEngine{
                 if(data.type === 'state'){
                     this.emit('state', data.state)
                 }
+                if(data.type == 'submesh-update'){
+                    console.log(data)
+                    data.submesh.forEach((submeshData)=>{
+                        this.emit('submesh-data', submeshData);
+                    });
+                }
             };
             this.worker.postMessage(JSON.stringify({
                 type: 'world',
@@ -109,16 +122,4 @@ export class MarkerEngine{
     
 }
 
-export class MarkerSubmesh {
-    constructor(){
-        
-    }
-    
-    addMarker(){
-        //add the marker to the 
-    }
-    
-    body(){
-        
-    }
-}
+export { Submesh }

@@ -155,6 +155,10 @@ export class Random{
         return this.rnd();
     }
     
+    random(){
+        return this.rnd();
+    }
+    
     float(upperBound=Number.MAX_VALUE, lowerBound=0){
         const delta = upperBound - lowerBound;
         return lowerBound + delta * this.rnd();

@@ -69,8 +69,9 @@ class VoxelCompute {
 
     getSubMesh(x, y, readDepth){ //todo: support updates as res enhances
         //todo: pluggable heightmap logic
-        const xRandom = new Random(`${this.getSeed(x, y)}-random-x`)
-        const yRandom = new Random(`${this.getSeed(x, y)}-random-y`)
+        const xRandom = new Random(`${this.getSeed(x, y)}-random-x`);
+        const yRandom = new Random(`${this.getSeed(x, y)}-random-y`);
+        console.log('RND', xRandom, yRandom)
         const xSeeds = [];
         const ySeeds = [];
         let lcv = 0;

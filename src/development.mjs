@@ -104,7 +104,6 @@ export class DevelopmentTools{
         var axesHelper = new AxesHelper( size );
         axesHelper.setColors('red', 'blue', 'green');
         if(point) axesHelper.position.set(point.x, point.y, point.z);
-        console.log('added scene AX helper', axesHelper)
         this.options.scene.add( axesHelper );
     }
     
@@ -112,7 +111,6 @@ export class DevelopmentTools{
         var axesHelper = new AxesHelper( 5 );
         axesHelper.setColors('red', 'blue', 'green');
         if(point) axesHelper.position.set(point.x, point.y, point.z+0.01);
-        console.log('added AX helper', axesHelper)
         return axesHelper;
     }
     
