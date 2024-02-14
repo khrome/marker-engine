@@ -108,16 +108,28 @@ export class Submesh{
         }
     }
     
+    refreshGeometry(){
+        if(this.mesh){
+            this.mesh.geometry.attributes.position.array = Float32Array.from(this.coords);
+            this.mesh.geometry.attributes.position.needsUpdate = true;
+            this.mesh.material.needsUpdate = true;
+            this.mesh.geometry.computeVertexNormals();
+        }
+    }
+    
     weld(partnerSubmesh, edge, target='that'){
-        weldSubmesh(this, partnerSubmesh, target, edge)
+        weldSubmesh(this, partnerSubmesh, target, edge);
+        console.log('weldo', this, partnerSubmesh, target, edge);
     }
 };
 
 const weldSubmesh = (submeshA, submeshB, target, edge)=>{
     let llo = (submeshA.size-1)*submeshA.size*3*3;
+    console.log('weld', edge)
     switch(edge){
         case 'bottom':
             if(target === 'this' || !target){
+                console.log('no action');
             }else{
                 let updateIndices = [];
                 let x=0;
@@ -133,6 +145,7 @@ const weldSubmesh = (submeshA, submeshB, target, edge)=>{
                 let subsearch = submeshA.coords //.slice(offset);
                 let lcv=0;
                 let item = {x:null, y:null, z:null}
+                console.log('>>>', updateIndices)
                 for(;lcv < updateIndices.length; lcv ++){
 
                     let updateIndex = updateIndices[lcv];
@@ -146,20 +159,27 @@ const weldSubmesh = (submeshA, submeshB, target, edge)=>{
                             submeshB.coords[updateIndex] === item.x &&
                             submeshB.coords[updateIndex+1] === submeshB.size - item.y
                         ){
+                            console.log(
+                                'changed', submeshA.coords[index+2], 
+                                'to', submeshB.coords[updateIndex+2]
+                            );
                             result = item;
                             submeshA.coords[index+2] = submeshB.coords[updateIndex+2];
                         }
                     }
                 }
-                //submeshA.refreshGeometry();
+                submeshA.refreshGeometry();
             }
             break;
         case 'top':
+            console.log('WTF-T');
             break;
         case 'right':
+            console.log('WTF-R');
             break;
         case 'left':
             if(target === 'this' || !target){
+                console.log('no action');
             }else{
                 let updateIndices = [];
                 let x=0;
@@ -188,12 +208,16 @@ const weldSubmesh = (submeshA, submeshB, target, edge)=>{
                             submeshB.coords[updateIndex] === submeshA.size - item.x &&
                             submeshB.coords[updateIndex+1] === item.y
                         ){
+                            console.log(
+                                'changed', submeshA.coords[index+2], 
+                                'to', submeshB.coords[updateIndex+2]
+                            );
                             result = item;
                             submeshA.coords[index+2] = submeshB.coords[updateIndex+2];
                         }
                     }
                 }
-                //submeshA.refreshGeometry();
+                submeshA.refreshGeometry();
             }
             break;
     }

@@ -46,10 +46,13 @@ export const weldTreadmill = (submeshIndex)=>{
     const directions =  codirectionsByText[0].concat(codirectionsByText[1]).concat(codirectionsByText[2]);
     directions.reverse().forEach((dir)=>{
         const local = neighbors(dir);
+        //console.log('neighbors', dir, local);
         if(local.north){ //weld the northern seam
+            console.log('WELD', dir, local.north)
             submeshIndex[dir].weld(submeshIndex[local.north], 'bottom');
         }
         if(local.east){ //weld the eastern seam
+            console.log('WELD', dir, local.east)
             submeshIndex[dir].weld(submeshIndex[local.east], 'left');
         }
     })
