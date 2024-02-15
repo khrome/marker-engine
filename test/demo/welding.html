@@ -446,10 +446,12 @@
                 position:absolute;
                 top:0px;
                 right:0px;
+                width: 100vw;
+                height: 100vh;
             }
-            #viz, #viz canvas, #viz2 canvas, #viz2{
-                height: 480px;
-                width: 480px;
+            #viz2 canvas, #viz2{
+                height: 100vh;
+                margin: auto;
             }
         </style>
     </head>
@@ -460,12 +462,7 @@
             import { 
                 Scene,
                 Vector3,
-                Color,
-                /*PlaneGeometry,
-                Mesh,
-                Vector3,
-                Color,
-                MeshPhongMaterial*/
+                Color
             } from 'three';
             import { Submesh } from 'marker-engine';
             import { create as createLights } from './lighting.mjs';
@@ -502,15 +499,24 @@
             
             const submeshA = new Submesh({x: 0, y: 0});
             const submeshB = new Submesh({x: 1, y: 0});
+            const submeshC = new Submesh({x: 0, y: 1});
             const modelA = submeshA.model();
             const modelB = submeshB.model();
+            const modelC = submeshC.model();
+            modelB.position.x = 16;
+            modelC.position.y = 16;
+            
             
             console.log(modelA, modelB);
             
-            scene.add(modelA);
-            scene.add(modelA);
-            
             submeshA.weld(submeshB, 'left');
+            submeshA.weld(submeshC, 'bottom');
+            
+            scene.add(modelA);
+            scene.add(modelB);
+            scene.add(modelC);
+            
+            //console.log(submeshB.coords);
             renderer.setAnimationLoop(() => {
                 controls.update();
                 renderer.render(scene, camera);

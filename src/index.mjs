@@ -39,7 +39,6 @@ export class MarkerEngine{
             this.addSubmesh(submesh);
             this.submeshes[submeshData.location] = submesh;
             if(Object.keys(this.submeshes).length === 9){
-                console.log('ALL SUBMESHES', this.submeshes)
                 weldTreadmill(this.submeshes);
                 Object.keys(this.submeshes).forEach((key)=>{
                     this.emit('submesh', this.submeshes[key]);
@@ -63,7 +62,6 @@ export class MarkerEngine{
         marker.mesh.quaternion.y = marker.quaternion.y;
         marker.mesh.quaternion.z = marker.quaternion.z;
         marker.mesh.quaternion.w = marker.quaternion.w;
-        console.log('MESH', marker.mesh);
         this.worker.postMessage(JSON.stringify({
             type: 'add-marker',
             marker: data
@@ -100,7 +98,6 @@ export class MarkerEngine{
                     this.emit('state', data.state)
                 }
                 if(data.type == 'submesh-update'){
-                    console.log(data)
                     data.submesh.forEach((submeshData)=>{
                         this.emit('submesh-data', submeshData);
                     });

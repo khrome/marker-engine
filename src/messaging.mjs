@@ -43,7 +43,6 @@ export const messageHandler = (e)=>{
                 let submeshData = [];
                 let submesh = null;
                 allTiles((tile, location)=>{
-                    console.log('TILE', tile);
                     submesh = new Submesh({
                         x: tile.x,
                         y: tile.y,
@@ -109,7 +108,6 @@ export const workerStateSetup = ()=>{
         marker.mesh.quaternion.z = marker.quaternion.z;
         marker.mesh.quaternion.w = marker.quaternion.w;
         marker.normalizeMesh();
-        //console.log('MESH', marker.mesh);
         //self.physicalWorld.addBody(physicsBody);
     };
     const evaluateTurn = (delta)=>{

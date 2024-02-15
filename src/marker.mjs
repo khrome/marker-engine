@@ -273,7 +273,6 @@ export class Marker{
     }
     
     moveInOrientation(directionVector, delta=1, target, treadmill){
-        //console.log('MOVE')
         //*
         let origin = null;
         if(this.boundingBox){
@@ -285,7 +284,6 @@ export class Marker{
         }
         origin.z =0;
         const movementSpeed = this.values.movementSpeed || 1;
-        //console.log(movementSpeed)
         const maxDistance = movementSpeed * delta;
         const quaternion = new Quaternion();
         directionVector.applyQuaternion(this.mesh.quaternion);
@@ -330,9 +328,7 @@ export class Marker{
             this.mesh.position.copy(localTarget);
             return 0;
         }else{
-            //console.log(maxDistance, movementSpeed)
             raycaster.ray.at(maxDistance, result);
-            //console.log(maxDistance, origin, result);
             this.moveTo(new Vector2(result.x, result.y));
             return -1;
         } //*/
@@ -346,15 +342,15 @@ export class Marker{
     }
     
     backward(delta=1, target, options, treadmill){ // -y
-        //return this.moveInOrientation(direction.backward.clone(), delta, target, treadmill);
+        return this.moveInOrientation(direction.backward.clone(), delta, target, treadmill);
     }
     
     strafeRight(delta=1, target, options, treadmill){ // +x
-        //return this.moveInOrientation(direction.right.clone(), delta, target, treadmill);
+        return this.moveInOrientation(direction.right.clone(), delta, target, treadmill);
     }
     
     strafeLeft(delta=1, target, options, treadmill){ // -x
-        //return this.moveInOrientation(direction.left.clone(), delta, target, treadmill);
+        return this.moveInOrientation(direction.left.clone(), delta, target, treadmill);
     }
     
     turn(delta=1, direction, target, options, treadmill){
