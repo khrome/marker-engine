@@ -103,6 +103,8 @@ export class Submesh{
     constructor(options={}){
         this.x = options.x || 0;
         this.y = options.y || 0;
+        this.worldX = options.tileX || options.x || 0;
+        this.worldY = options.tileY || options.y || 0;
         this.voxelData = options.voxels || [];
         this.markers = [];
         this.size = 16;

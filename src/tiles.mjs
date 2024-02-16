@@ -22,7 +22,7 @@ const codirectionsByText = [
     ['southwest', 'south',   'southeast'] 
 ];
 
-const neighbors = (location)=>{
+export const neighbors = (location)=>{
     let x = -1;
     let y = -1;
     codirectionsByText.forEach((row, yIndex)=>{

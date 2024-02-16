@@ -548,8 +548,8 @@
                         viz.update(data);
                         viz2.update(data);
                     });
-                    viz.start();
-                    viz2.start();
+                    viz.start(engine);
+                    viz2.start(engine);
                     engine.start();
                 }catch(ex){
                     console.log('$$$', ex);

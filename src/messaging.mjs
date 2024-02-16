@@ -22,7 +22,7 @@ import {
     Body
 } from './cannon-es.mjs';
 
-import { allTiles } from './tiles.mjs';
+import { allTiles, neighbors } from './tiles.mjs';
 
 //const self = {};
 
@@ -46,8 +46,10 @@ export const messageHandler = (e)=>{
                     submesh = new Submesh({
                         x: tile.x,
                         y: tile.y,
+                        tileX: tile.x,
+                        tileY: tile.y,
                     });
-                    self.addSubmesh(submesh);
+                    self.addSubmesh(submesh, location);
                     const data = submesh.data();
                     data.location = location
                     submeshData.push(data);
@@ -94,8 +96,10 @@ export const messageHandler = (e)=>{
 
 export const workerStateSetup = ()=>{
     self.markers = [];
-    self.addSubmesh = (submesh)=>{
+    self.submeshes = {};
+    self.addSubmesh = (submesh, name)=>{
         const physicsBody = submesh.body();
+        self.submeshes[name] = submesh;
         self.physicalWorld.addBody(physicsBody);
         submesh.mesh = physicsBody;
         submesh.mesh.position.x = submesh.x * 16;
@@ -118,6 +122,23 @@ export const workerStateSetup = ()=>{
         marker.normalizeMesh();
         //self.physicalWorld.addBody(physicsBody);
     };
+    self.worldPositionFor = (localPosition)=>{
+        return {
+            x: localPosition.x + self.submeshes.current.worldX*16,
+            y: localPosition.y + self.submeshes.current.worldY*16,
+            z: 0
+        }
+    }
+    self.localPositionFor = (worldPosition)=>{
+        if(!self.submeshes.current){
+            return worldPosition;
+        }
+        return {
+            x: worldPosition.x - self.submeshes.current.worldX*16,
+            y: worldPosition.y - self.submeshes.current.worldY*16,
+            z: 0
+        }
+    }
     const evaluateTurn = (delta)=>{
         // physics tick
         self.physicalWorld.step(delta);
@@ -125,7 +146,7 @@ export const workerStateSetup = ()=>{
         try{
             let lcv=null;
             for(lcv=0; lcv < self.markers.length; lcv++){
-                self.markers[lcv].act(delta);
+                self.markers[lcv].act(delta, self);
                 //console.log('MESH ON ACT', self.markers[lcv].mesh);
             }
         }catch(ex){
@@ -160,10 +181,33 @@ export const workerStateSetup = ()=>{
         console.log('TR', dir)
         xMod = dir.x * 16;
         yMod = dir.y * 16;
-        if(self.submeshes) self.submeshes.forEach((submesh)=>{
+        /*if(self.submeshes) self.submeshes.forEach((submesh)=>{
             submesh.mesh.position.x += xMod;
             submesh.mesh.position.y += yMod;
+        });*/
+        const submeshes = {};
+        let newPosition = null;
+        let neighborhood = null;
+        console.log('1');
+        Object.keys(self.submeshes).forEach((key)=>{
+            //change position
+            self.submeshes[key].mesh.position.x += dir.x*16;
+            self.submeshes[key].mesh.position.y += dir.y*16;
+            //remap by submesh name
+            newPosition = null;
+            neighborhood = neighbors(key);
+            if(dir.x === -1) newPosition = neighborhood.west;
+            if(dir.x === 1) newPosition = neighborhood.east;
+            if(newPosition){
+                neighborhood = neighbors(newPosition);
+            }
+            if(dir.y === -1) newPosition = neighborhood.south;
+            if(dir.y === 1) newPosition = neighborhood.north;
+            if(newPosition) submeshes[newPosition] = self.submeshes[key];
         });
+        console.log('2');
+        console.log(submeshes);
+        self.submeshes = submeshes;
         if(self.markers) self.markers.forEach((marker)=>{
             marker.mesh.position.x += xMod;
             marker.mesh.position.y += yMod;

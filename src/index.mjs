@@ -83,6 +83,26 @@ export class MarkerEngine{
         }));
     }
     
+    worldPositionFor(localPosition){
+        return {
+            x: localPosition.x + this.submeshes.current.worldX*16,
+            y: localPosition.y + this.submeshes.current.worldY*16,
+            z: 0
+        }
+    }
+    localPositionFor(worldPosition){
+        //console.log('???', this.submeshes.current)
+        if(!this.submeshes.current){
+            //this should only happen while submeshes are loading
+            return worldPosition;
+        }
+        return {
+            x: worldPosition.x - this.submeshes.current.worldX*16,
+            y: worldPosition.y - this.submeshes.current.worldY*16,
+            z: 0
+        }
+    }
+    
     addMarker(marker){
         //add the marker to the
         marker.engine = this;

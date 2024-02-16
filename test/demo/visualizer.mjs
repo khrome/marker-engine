@@ -29,17 +29,18 @@ export class Visualizer{
         });
     }
     
-    drawPoint(context, marker, target){
+    drawPoint(context, marker, target, treadmill){
         context.strokeStyle = '#000000'
         context.fillStyle = marker.color || marker.values.color || '#FF0000';
         context.beginPath();
+        const localPoint = treadmill.localPositionFor(marker.target|| target)
         const pos = {
             x: (marker.mesh.position.x+16)*10, 
             y: ((32 - marker.mesh.position.y)*10), 
         };
         const targ = {
-            x: (marker.target.x+16)*10, 
-            y: (32 - marker.target.y)*10
+            x: (localPoint.x+16)*10, 
+            y: (32 - localPoint.y)*10
         }
         //circle
         context.arc(
@@ -99,7 +100,7 @@ export class Visualizer{
         //context.stroke();
     }
     
-    draw(){
+    draw(treadmill){
         const context = this.canvas.getContext('2d');
         context.strokeStyle = '#000000';
         context.fillStyle = '#FF0000';
@@ -122,13 +123,14 @@ export class Visualizer{
         context.lineTo(48*10, 32*10);
         context.stroke();
         this.markers.forEach((existingMarker)=>{
-            this.drawPoint(context, existingMarker);
+            this.drawPoint(context, existingMarker, existingMarker.target, treadmill);
         });
     }
     
-    start(turnHandler){
+    start(engine, turnHandler){
         const drawLoop = ()=>{
-            this.draw();
+            console.log('.')
+            this.draw(engine);
             if(turnHandler) turnHandler();
             setTimeout(drawLoop, 0);
         };

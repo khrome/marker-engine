@@ -195,6 +195,20 @@ export class Marker{
         return object;
     }
     
+    scenePosition(){ //scene context?
+        return {
+            x: this.mesh.position.x,
+            y: this.mesh.position.y,
+            z: this.mesh.position.z
+        }
+    }
+    
+    worldPosition(treadmill, position){
+        return treadmill.worldPositionFor(
+            position || this.mesh.position
+        );
+    }
+    
     data(options){
         let result = null;
         if(this.mesh){
@@ -234,7 +248,7 @@ export class Marker{
         return result;
     }
     
-    act(delta){
+    act(delta, treadmill){
         let remainingTime = delta;
         let actionDetail = null;
         let action = null;
@@ -251,7 +265,8 @@ export class Marker{
                         delta, 
                         this,
                         actionDetail.target, 
-                        actionDetail.options
+                        actionDetail.options,
+                        treadmill
                     );
                     //we're done with this action and have some time remainder
                     if(remainingTime > 0){
@@ -272,8 +287,9 @@ export class Marker{
         //if there's remaining time after depleting actions, it's spent idle
     }
     
-    moveInOrientation(directionVector, delta=1, target, treadmill){
+    moveInOrientation(directionVector, delta=1, localTarget, treadmill){
         //*
+        const target = treadmill.localPositionFor(localTarget);
         let origin = null;
         if(this.boundingBox){
             origin = this.boundingBox.getCenter()
@@ -289,7 +305,7 @@ export class Marker{
         directionVector.applyQuaternion(this.mesh.quaternion);
         raycaster.ray.origin.copy(origin);
         raycaster.ray.direction.copy(directionVector);
-        let localTarget = target; //&& treadmill.treadmillPointFor(target);
+        //let localTarget = target; //&& treadmill.treadmillPointFor(target);
         //Logger.log('mio-target', Logger.DEBUG, 'marker', localTarget);
         //Logger.log('mio-ray', Logger.DEBUG, 'marker', raycaster);
         //*
@@ -353,9 +369,9 @@ export class Marker{
         return this.moveInOrientation(direction.left.clone(), delta, target, treadmill);
     }
     
-    turn(delta=1, direction, target, options, treadmill){
+    turn(delta=1, direction, localTarget, options, treadmill){
         //console.log('TURN')
-        
+        const target = treadmill.localPositionFor(localTarget);
         const turnSpeed = this.values.turnSpeed || 0.00001;
         const maxRotation = turnSpeed * delta;
         const position = new Vector3();

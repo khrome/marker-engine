@@ -118,7 +118,7 @@ export class Visualizer3D{
         );
     }
     
-    start(turnHandler){
+    start(engine, turnHandler){
         this.renderer.setAnimationLoop(() => {
             //if(window.tools) window.tools.tickStart();
             //if(directional.tick) directional.tick();
