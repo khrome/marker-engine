@@ -509,6 +509,17 @@
                         marker.action(action, {}, position);
                     });
                     
+                    const avatar = new Marker({
+                        id : 'player-avatar',
+                        values: {
+                            movementSpeed: 5
+                        }
+                    });
+                    
+                    addMarker(5, 5, avatar);
+                    engine.focusOn(avatar);
+                    avatar.action('moveTo', {}, {x: 5, y: 20, z: 0});
+                    
                     tools((tool)=>{
                         tool.sceneAxes(new Vector3(0, 0, 0), 2);
                         tool.sceneAxes(new Vector3(-16, -16, 0), 2);

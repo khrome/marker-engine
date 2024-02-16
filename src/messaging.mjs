@@ -73,6 +73,14 @@ export const messageHandler = (e)=>{
                 break;
             case 'move-marker':
                 break;
+            case 'focus':
+                const found = self.markers.find((marker)=> marker.id === data.id);
+                if(found){
+                    self.focusedMarker = found;
+                }else{
+                    console.log(`could not focus on marker ${data.id}`);
+                }
+                break;
             case 'marker-action': 
                 const action = data.action;
                 const subject = self.markers.find((marker)=> marker.id == action.id );
@@ -145,6 +153,23 @@ export const workerStateSetup = ()=>{
             markers
         };
     };
+    
+    let xMod = null;
+    let yMod = null;
+    const transitionTreadmill = (dir)=>{
+        console.log('TR', dir)
+        xMod = dir.x * 16;
+        yMod = dir.y * 16;
+        if(self.submeshes) self.submeshes.forEach((submesh)=>{
+            submesh.mesh.position.x += xMod;
+            submesh.mesh.position.y += yMod;
+        });
+        if(self.markers) self.markers.forEach((marker)=>{
+            marker.mesh.position.x += xMod;
+            marker.mesh.position.y += yMod;
+        });
+    }
+    
     self.start = ()=>{
         if(!self.world) throw new Error('must set world to start');
         if(!self.clock) self.clock = new Clock();
@@ -164,6 +189,27 @@ export const workerStateSetup = ()=>{
                         state: currentState
                     }));
                 }
+                //*
+                if(self.focusedMarker){
+                    if(
+                        self.focusedMarker.mesh.position.x < 0 || 
+                        self.focusedMarker.mesh.position.x > 16 ||
+                        self.focusedMarker.mesh.position.y < 0 || 
+                        self.focusedMarker.mesh.position.y > 16
+                    ){
+                        const transition = {x:0, y:0};
+                        if(self.focusedMarker.mesh.position.x < 0) transition.x = 1;
+                        if(self.focusedMarker.mesh.position.y < 0) transition.y = 1;
+                        if(self.focusedMarker.mesh.position.x > 16) transition.x = -1;
+                        if(self.focusedMarker.mesh.position.y > 16) transition.y = -1;
+                        
+                        transitionTreadmill(transition);
+                        self.postMessage(JSON.stringify({
+                            type:'treadmill-transition', 
+                            transition
+                        }));
+                    }
+                } //*/
                 if(self.running) setTimeout(main, interval);
             }catch(ex){
                 console.log('MAIN LOOP EX', ex);

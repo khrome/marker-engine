@@ -167,6 +167,8 @@ export class Submesh{
             voxels: this.voxelData,
             x: this.x,
             y: this.y,
+            worldX: this.x,
+            worldY: this.y,
             position:{
                 x: this.mesh.position.x,
                 y: this.mesh.position.y,

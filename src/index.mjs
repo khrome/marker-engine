@@ -46,7 +46,41 @@ export class MarkerEngine{
                 this.emit('load', {});
                 //now it's time to weld the submeshes edge-to-edge
             }
-        })
+        });
+        this.on('treadmill-transition', ({x, y})=>{
+            const submeshes = {};
+            let newPosition = null;
+            let neighborhood = null;
+            Object.keys(this.submeshes).forEach((key)=>{
+                //change position
+                this.submeshes[key].mesh.position.x += x*16;
+                this.submeshes[key].mesh.position.y += y*16;
+                //remap by submesh name
+                newPosition = null;
+                neighborhood = neighbors(key);
+                if(x === -1) newPosition = neighborhood.west;
+                if(x === 1) newPosition = neighborhood.east;
+                if(newPosition){
+                    neighborhood = neighbors(newPosition);
+                }
+                if(y === -1) newPosition = neighborhood.south;
+                if(y === 1) newPosition = neighborhood.north;
+                if(newPosition) submeshes[newPosition] = this.submeshes[key];
+            });
+            console.log(submeshes);
+            this.submeshes = submeshes;
+            this.markers.forEach((marker)=>{
+                marker.mesh.position.x += x*16;
+                marker.mesh.position.y += y*16;
+            });
+        });
+    }
+    
+    focusOn(marker){
+        this.worker.postMessage(JSON.stringify({
+            type: 'focus',
+            id: marker.id
+        }));
     }
     
     addMarker(marker){
