@@ -21,17 +21,31 @@ import {
     Vec3,
     Body
 } from './cannon-es.mjs';
+import {
+    generateMeshCreationFromVoxelFn
+} from './voxel-mesh.mjs';
 
 import { allTiles, neighbors, Tile } from './tiles.mjs';
 
 //const self = {};
 
-export const messageHandler = (e)=>{
+export const messageHandler = async (e)=>{
     const data = JSON.parse(e.data);
     if(data.type){
         switch(data.type){
             case 'world': //incoming world definition
-                console.log('WORLD', data)
+                console.log('WORLD', data);
+                let voxelFilePromise;
+                if(data.world.voxelFile){
+                    voxelFilePromise = import(data.world.voxelFile);
+                    (async ()=>{
+                        const { voxels } = await voxelFilePromise;
+                        const creationFn = generateMeshCreationFromVoxelFn(
+                            voxels
+                        );
+                        self.voxelMesh = creationFn('test-seed', 16);
+                    })();
+                }
                 self.world = data.world;
                 self.physicalWorld = new World({
                     gravity: new Vec3(0, 0, -9.81)
@@ -42,12 +56,14 @@ export const messageHandler = (e)=>{
                 }
                 let submeshData = [];
                 let submesh = null;
+                if(voxelFilePromise) await voxelFilePromise;
                 allTiles((tile, location)=>{
                     submesh = new Submesh({
                         x: tile.x,
                         y: tile.y,
                         tileX: tile.x,
                         tileY: tile.y,
+                        voxelMesh: self.voxelMesh
                     });
                     self.addSubmesh(submesh, location);
                     const data = submesh.data();
@@ -181,12 +197,12 @@ export const workerStateSetup = ()=>{
     let xMod = null;
     let yMod = null;
     const transitionTreadmill = (dir)=>{
-        console.log('TR', dir)
         xMod = dir.x * 16;
         yMod = dir.y * 16;
         const submeshes = {};
         let newPosition = null;
         let neighborhood = null;
+        const oldSubmeshes = Object.keys(self.submeshes).map((key)=> self.submeshes[key]);
         Object.keys(self.submeshes).forEach((key)=>{
             //change position
             self.submeshes[key].mesh.position.x += dir.x*16;
@@ -203,13 +219,13 @@ export const workerStateSetup = ()=>{
             if(dir.y === 1) newPosition = neighborhood.north;
             if(newPosition) submeshes[newPosition] = self.submeshes[key];
         });
-        console.log(submeshes);
         self.submeshes = submeshes;
         const loadingMeshes = [];
         const current = self.submeshes.current;
         let x = null;
         let y = null;
         const submeshData = [];
+        const reusedSubmeshes = [];
         allTiles((tile, location)=>{
             if(!submeshes[location]){
                 loadingMeshes.push(new Promise((resolve, reject)=>{
@@ -222,6 +238,7 @@ export const workerStateSetup = ()=>{
                             y: tile.y,
                             tileX: x,
                             tileY: y,
+                            voxelMesh: self.voxelMesh
                         });
                         self.addSubmesh(submesh, location);
                         const data = submesh.data();
@@ -232,7 +249,22 @@ export const workerStateSetup = ()=>{
                         reject(ex);
                     }
                 }));
+            }else{
+                reusedSubmeshes.push(submeshes[location])
             }
+        });
+        const removedSubmeshes = [];
+        oldSubmeshes.forEach((submesh)=>{
+            let found = false;
+            reusedSubmeshes.forEach((submeshB)=>{
+                if(
+                    submesh.worldX == submeshB.worldX &&
+                    submesh.worldY == submeshB.worldY
+                ){
+                    found = true;
+                }
+            });
+            if(!found) removedSubmeshes.push(submesh);
         });
         if(self.markers) self.markers.forEach((marker)=>{
             marker.mesh.position.x += xMod;
@@ -243,6 +275,19 @@ export const workerStateSetup = ()=>{
             self.postMessage(JSON.stringify({
                 type:'submesh-update', 
                 submesh: submeshData
+            }));
+            const removalData = [];
+            removedSubmeshes.forEach((submesh)=>{
+                self.physicalWorld.removeBody(submesh.mesh);
+                removalData.push({ 
+                   worldX: submesh.worldX,
+                   worldY: submesh.worldY
+                });
+            });
+            console.log('REMOVALS', removalData);
+            self.postMessage(JSON.stringify({
+                type:'submesh-remove', 
+                removals: removalData
             }));
         })();
     }
@@ -255,6 +300,7 @@ export const workerStateSetup = ()=>{
         self.clock.start();
         let delta = null;
         const interval = 0;
+        let removedMarkers = [];
         const main = ()=>{
             try{
                 delta = clock.getDelta();
@@ -266,8 +312,7 @@ export const workerStateSetup = ()=>{
                         state: currentState
                     }));
                 }
-                //*
-                if(self.focusedMarker){
+                if(self.focusedMarker){ //to treadmill, you must focus on a marker
                     if(
                         self.focusedMarker.mesh.position.x < 0 || 
                         self.focusedMarker.mesh.position.x > 16 ||
@@ -286,7 +331,27 @@ export const workerStateSetup = ()=>{
                             transition
                         }));
                     }
-                } //*/
+                }
+                removedMarkers = [];
+                let marker = null;
+                for(let index = self.markers.length-1; index >= 0; index--){
+                    marker = self.markers[index];
+                    if(
+                        marker.mesh.position.x > 32 ||
+                        marker.mesh.position.x < -16 ||
+                        marker.mesh.position.y > 32 ||
+                        marker.mesh.position.y < -16
+                    ){
+                        //TODO: exempt markers with valid, in range, targets
+                        removedMarkers.push(marker.id);
+                        self.markers.splice(index, 1);
+                        self.physicalWorld.removeBody(marker.mesh);
+                    }
+                }
+                if(removedMarkers.length) self.postMessage(JSON.stringify({
+                    type:'remove-markers', 
+                    markers: removedMarkers
+                }));
                 if(self.running) setTimeout(main, interval);
             }catch(ex){
                 console.log('MAIN LOOP EX', ex);

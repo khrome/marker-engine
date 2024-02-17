@@ -467,7 +467,9 @@
             const viz2 = new Visualizer3D();
             viz.attach(vizEl);
             viz2.attach(viz2El);
-            const engine = new MarkerEngine();
+            const engine = new MarkerEngine({
+                voxelFile: '/test/demo/perlin-mesh.mjs'
+            });
             const markers = [];
             const addMarker = (x, y, marker)=>{
                 marker.position.x = x;

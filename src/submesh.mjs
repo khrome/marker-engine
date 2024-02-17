@@ -27,8 +27,13 @@ const {
 } from '../node_modules/three/build/three.module.js';
 
 import { tools } from './development.mjs';
-import { createVoxelMesh } from './voxel-mesh.mjs';
-//*
+import { 
+    createVoxelMesh as defaultMesh, 
+    generateMeshCreationFromVoxelFn 
+} from './voxel-mesh.mjs';
+
+let createVoxelMesh = defaultMesh;
+/*
 const defaultVoxelMesh = createVoxelMesh('test-seed', 16);
 //*/
 
@@ -108,7 +113,9 @@ export class Submesh{
         this.voxelData = options.voxels || [];
         this.markers = [];
         this.size = 16;
-        this.voxelMesh = options.voxelMesh || defaultVoxelMesh;
+        this.seed = `${options.seed || 'submesh-seed'}-${this.worldX}-${this.worldY}`;
+        if(!options.voxelMesh) throw new Error('No Voxel Mesh!')
+        this.voxelMesh = options.voxelMesh;
     }
     
     addMarker(marker){
@@ -124,7 +131,7 @@ export class Submesh{
     
     voxels(){
         if(!this.voxelData.length){
-            this.voxelData = this.voxelMesh.getSubmeshVoxels(this.x, this.y, 2);
+            this.voxelData = this.voxelMesh.getSubmeshVoxels(this.worldX, this.worldY, 2);
         }
         return this.voxelData;
     }

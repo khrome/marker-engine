@@ -168,6 +168,8 @@ const voxelsToCoords  = (voxels, submeshSize)=>{
                 (tlp[1] + trp[1] + blp[1] + brp[1])/4,
                 (tlp[2] + trp[2] + blp[2] + brp[2])/4,
             ];
+            if(isNaN(php[0])) php[0] = 0;
+            if(isNaN(php[1])) php[1] = 0;
             const face1 = (typeof tl === 'number' && typeof bl === 'number')?blp.concat(tlp).concat(php):[];
             const face2 = (typeof tl === 'number' && typeof tr === 'number')?tlp.concat(trp).concat(php):[];
             const face3 = (typeof tr === 'number' && typeof br === 'number')?trp.concat(brp).concat(php):[];
@@ -199,4 +201,31 @@ function createVoxelMesh(worldSeed, submeshSize) {
         submeshSize: context.submeshSize
     };
 }
-export { createVoxelMesh };
+
+const generateMeshCreationFromVoxelFn = (makeVoxels)=>{
+    return (worldSeed, submeshSize)=>{
+        const context = {
+            getSeed : (x, y) => {
+                return `${worldSeed}-${x}-${y}`;
+            },
+            getSubmesh : (x, y, depth, coords, material) => {
+                const groundMesh = createGroundMesh(coords, material);
+                return groundMesh;
+            },
+            getCoordsFromVoxels : (x, y, depth, voxels) => {
+                const submesh = voxels || context.getSubmeshVoxels(x, y, depth);
+                const voxelGroundMeshCoords = voxelsToCoords(submesh, submeshSize);
+                return voxelGroundMeshCoords;
+            },
+            getSubmeshVoxels : (x, y, depth) => {
+                const voxels =  makeVoxels(x, y, depth);
+                return voxels;
+            },
+            submeshSize
+        };
+        
+        return context;
+    }
+};
+
+export { createVoxelMesh, generateMeshCreationFromVoxelFn };

@@ -107,17 +107,6 @@ export class Visualizer3D{
         });
     }
     
-    draw(){
-        const context = this.canvas.getContext('2d');
-        context.fillStyle = '#FF0000';
-        context.fillRect(
-            0, 
-            0,
-            this.canvas.width,
-            this.canvas.height
-        );
-    }
-    
     start(engine, turnHandler){
         this.renderer.setAnimationLoop(() => {
             //if(window.tools) window.tools.tickStart();
@@ -127,6 +116,15 @@ export class Visualizer3D{
             //if(window.tools) window.tools.tickStop();
             if(turnHandler) turnHandler();
         }, 100);
+        engine.on('remove-submesh', (submesh)=>{
+            this.scene.remove(submesh.mesh);
+        });
+        engine.on('remove-markers', (markers)=>{
+            console.log('viz RM', markers);
+            markers.forEach((marker)=>{
+                this.scene.remove(marker.mesh);
+            })
+        });
     }
     
     attach(el){

@@ -11,6 +11,7 @@ import { Marker } from './marker.mjs';
 import { Submesh } from './submesh.mjs';
 import { allTiles, neighbors, weldTreadmill } from './tiles.mjs';
 import { tools, enable } from './development.mjs';
+import { generateMeshCreationFromVoxelFn } from './voxel-mesh.mjs';
 
 export { Marker, tools, enable };
 
@@ -35,7 +36,24 @@ export class MarkerEngine{
         (this.emitter).onto(this);
         this.submeshes = {};
         this.markers = [];
-        this.on('submesh-data', (submeshData)=>{
+        let createVoxels = null;
+        let voxelFilePromise;
+        if(options.voxelFile){
+            (async ()=>{
+                voxelFilePromise = import(options.voxelFile);
+                const { voxels } = await voxelFilePromise;
+                createVoxels = voxels;
+                const creationFn = generateMeshCreationFromVoxelFn(
+                    options.createVoxels
+                );
+                this.voxelMesh = creationFn('test-seed', 16);
+            })();
+        }
+        this.on('submesh-data', async (submeshData)=>{
+            if(voxelFilePromise) await voxelFilePromise;
+            if(this.voxelMesh){
+                submeshData.voxelMesh = this.voxelMesh;
+            }
             const submesh = new Submesh(submeshData);
             this.addSubmesh(submesh);
             this.submeshes[submeshData.location] = submesh;
@@ -52,6 +70,7 @@ export class MarkerEngine{
             const submeshes = {};
             let newPosition = null;
             let neighborhood = null;
+            const oldSubmeshes = Object.keys(this.submeshes).map((key)=> this.submeshes[key]);
             Object.keys(this.submeshes).forEach((key)=>{
                 //change position
                 this.submeshes[key].mesh.position.x += x*16;
@@ -66,7 +85,11 @@ export class MarkerEngine{
                 }
                 if(y === -1) newPosition = neighborhood.south;
                 if(y === 1) newPosition = neighborhood.north;
-                if(newPosition) submeshes[newPosition] = this.submeshes[key];
+                if(newPosition){
+                    submeshes[newPosition] = this.submeshes[key];
+                }else{
+                    this.emit('remove-submesh', this.submeshes[key]);
+                }
             });
             this.submeshes = submeshes;
             this.markers.forEach((marker)=>{
@@ -151,13 +174,21 @@ export class MarkerEngine{
                 if(data.type === 'state'){
                     this.emit('state', data.state)
                 }
-                if(data.type == 'submesh-update'){
+                if(data.type === 'submesh-update'){
                     data.submesh.forEach((submeshData)=>{
                         this.emit('submesh-data', submeshData);
                     });
                 }
-                if(data.type == 'treadmill-transition'){
+                if(data.type === 'treadmill-transition'){
                     this.emit('treadmill-transition', data.transition);
+                }
+                if(data.type === 'remove-markers'){
+                    const markerObjects = data.markers.map((id)=>{
+                        return this.markers.find((marker)=>{
+                            return marker.id === id;
+                        });
+                    });
+                    this.emit('remove-markers', markerObjects);
                 }
             };
             this.worker.postMessage(JSON.stringify({
