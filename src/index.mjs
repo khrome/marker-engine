@@ -9,7 +9,7 @@ const ensureRequire = ()=> (!internalRequire) && (internalRequire = mod.createRe
 import { Worker } from './worker.mjs';
 import { Marker } from './marker.mjs';
 import { Submesh } from './submesh.mjs';
-import { allTiles, weldTreadmill } from './tiles.mjs';
+import { allTiles, neighbors, weldTreadmill } from './tiles.mjs';
 import { tools, enable } from './development.mjs';
 
 export { Marker, tools, enable };
@@ -34,6 +34,7 @@ export class MarkerEngine{
         };
         (this.emitter).onto(this);
         this.submeshes = {};
+        this.markers = [];
         this.on('submesh-data', (submeshData)=>{
             const submesh = new Submesh(submeshData);
             this.addSubmesh(submesh);
@@ -67,7 +68,6 @@ export class MarkerEngine{
                 if(y === 1) newPosition = neighborhood.north;
                 if(newPosition) submeshes[newPosition] = this.submeshes[key];
             });
-            console.log(submeshes);
             this.submeshes = submeshes;
             this.markers.forEach((marker)=>{
                 marker.mesh.position.x += x*16;
@@ -91,7 +91,6 @@ export class MarkerEngine{
         }
     }
     localPositionFor(worldPosition){
-        //console.log('???', this.submeshes.current)
         if(!this.submeshes.current){
             //this should only happen while submeshes are loading
             return worldPosition;
@@ -116,6 +115,7 @@ export class MarkerEngine{
         marker.mesh.quaternion.y = marker.quaternion.y;
         marker.mesh.quaternion.z = marker.quaternion.z;
         marker.mesh.quaternion.w = marker.quaternion.w;
+        this.markers.push(marker);
         this.worker.postMessage(JSON.stringify({
             type: 'add-marker',
             marker: data
@@ -155,6 +155,9 @@ export class MarkerEngine{
                     data.submesh.forEach((submeshData)=>{
                         this.emit('submesh-data', submeshData);
                     });
+                }
+                if(data.type == 'treadmill-transition'){
+                    this.emit('treadmill-transition', data.transition);
                 }
             };
             this.worker.postMessage(JSON.stringify({

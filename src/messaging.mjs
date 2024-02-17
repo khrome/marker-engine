@@ -22,7 +22,7 @@ import {
     Body
 } from './cannon-es.mjs';
 
-import { allTiles, neighbors } from './tiles.mjs';
+import { allTiles, neighbors, Tile } from './tiles.mjs';
 
 //const self = {};
 
@@ -123,6 +123,9 @@ export const workerStateSetup = ()=>{
         //self.physicalWorld.addBody(physicsBody);
     };
     self.worldPositionFor = (localPosition)=>{
+        if(!self.submeshes.current){
+            return localPosition;
+        }
         return {
             x: localPosition.x + self.submeshes.current.worldX*16,
             y: localPosition.y + self.submeshes.current.worldY*16,
@@ -181,14 +184,9 @@ export const workerStateSetup = ()=>{
         console.log('TR', dir)
         xMod = dir.x * 16;
         yMod = dir.y * 16;
-        /*if(self.submeshes) self.submeshes.forEach((submesh)=>{
-            submesh.mesh.position.x += xMod;
-            submesh.mesh.position.y += yMod;
-        });*/
         const submeshes = {};
         let newPosition = null;
         let neighborhood = null;
-        console.log('1');
         Object.keys(self.submeshes).forEach((key)=>{
             //change position
             self.submeshes[key].mesh.position.x += dir.x*16;
@@ -205,13 +203,48 @@ export const workerStateSetup = ()=>{
             if(dir.y === 1) newPosition = neighborhood.north;
             if(newPosition) submeshes[newPosition] = self.submeshes[key];
         });
-        console.log('2');
         console.log(submeshes);
         self.submeshes = submeshes;
+        const loadingMeshes = [];
+        const current = self.submeshes.current;
+        let x = null;
+        let y = null;
+        const submeshData = [];
+        allTiles((tile, location)=>{
+            if(!submeshes[location]){
+                loadingMeshes.push(new Promise((resolve, reject)=>{
+                    try{
+                        const offset = Tile.offset[location];
+                        x = current.worldX + offset.x;
+                        y = current.worldY + offset.y;
+                        const submesh = new Submesh({
+                            x: tile.x,
+                            y: tile.y,
+                            tileX: x,
+                            tileY: y,
+                        });
+                        self.addSubmesh(submesh, location);
+                        const data = submesh.data();
+                        data.location = location;
+                        submeshData.push(data);
+                        resolve(submesh);
+                    }catch(ex){
+                        reject(ex);
+                    }
+                }));
+            }
+        });
         if(self.markers) self.markers.forEach((marker)=>{
             marker.mesh.position.x += xMod;
             marker.mesh.position.y += yMod;
         });
+        (async ()=>{
+            const meshes = await Promise.all(loadingMeshes);
+            self.postMessage(JSON.stringify({
+                type:'submesh-update', 
+                submesh: submeshData
+            }));
+        })();
     }
     
     self.start = ()=>{

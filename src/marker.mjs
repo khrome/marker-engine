@@ -327,21 +327,14 @@ export class Marker{
             }
         }
         //*/
-        /*
-        console.log(
-            target,
-            origin, 
-            localTarget, 
-            origin.distanceTo(localTarget), maxDistance
-        )//*/
         if(
             target &&
              origin && 
              localTarget && 
-             origin.distanceTo(localTarget) < maxDistance
+             origin.distanceTo(target) < maxDistance
          ){
             //todo: compute remaining time
-            this.mesh.position.copy(localTarget);
+            this.mesh.position.copy(target);
             return 0;
         }else{
             raycaster.ray.at(maxDistance, result);
@@ -370,7 +363,6 @@ export class Marker{
     }
     
     turn(delta=1, direction, localTarget, options, treadmill){
-        //console.log('TURN')
         const target = treadmill.localPositionFor(localTarget);
         const turnSpeed = this.values.turnSpeed || 0.00001;
         const maxRotation = turnSpeed * delta;
@@ -404,24 +396,15 @@ export class Marker{
             const motion = direction * maxTurn;
             const increment = direction * Math.PI / 64;
             const angle = (twoPI + (this.turnAngle || 0) + increment) % twoPI; //make positive
-            /*
-            console.log(
-                '>>', 
-                (angle > targetAngle && this.turnAngle < targetAngle),
-                (angle < targetAngle && this.turnAngle > targetAngle),
-                angle, targetAngle, this.turnAngle, direction
-            ) //*/
             if( //if this iteration crosses the boundary of the target
                 (angle > targetAngle && this.turnAngle < targetAngle) || //clockwise
                 (angle < targetAngle && this.turnAngle > targetAngle)
             ){
-                //console.log('.')
                 this.mesh.quaternion.setFromAxisAngle(new Vec3(0,0,1), targetAngle);
                 const remainder = delta * 1/(targetAngle/angle);
                 this.turnAngle = null;
                 return remainder;
             }else{
-                //console.log('+', this.lookAt(target))
                 this.mesh.quaternion.setFromAxisAngle(new Vec3(0,0,1), angle);
                 this.turnAngle = angle;
                 return 0;
@@ -444,15 +427,10 @@ export class Marker{
     }
     
     moveTo(point){
-        //console.log('MOVE', point)
         //*
         const from = this.mesh.position.clone();
         this.mesh.position.x = point.x;
         this.mesh.position.y = point.y;
-        //this.mesh.position.set(point.x, point.y, 0);
-        /*if(this.body){
-            this.body.position.set(point.x, point.y);
-        }*/
         if(this.linked && this.linked.length){
             const delta = {
                 x: point.x - from.x,

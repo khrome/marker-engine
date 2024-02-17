@@ -129,7 +129,6 @@ export class Visualizer{
     
     start(engine, turnHandler){
         const drawLoop = ()=>{
-            console.log('.')
             this.draw(engine);
             if(turnHandler) turnHandler();
             setTimeout(drawLoop, 0);
