@@ -209,7 +209,8 @@ const weldSubmesh = (submeshA, submeshB, target, edge)=>{
             if(target === 'this' || !target){
                 console.log('no weld');
             }else{
-                copyRowCoords(submeshA, submeshB, 16, 0);
+                //copyRowCoords(submeshA, submeshB, 16, 0);
+                copyRowCoords(submeshB, submeshA, 0, 16);
                 submeshB.refreshGeometry();
             }
             break;

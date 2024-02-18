@@ -468,7 +468,8 @@
             viz.attach(vizEl);
             viz2.attach(viz2El);
             const engine = new MarkerEngine({
-                voxelFile: '/test/demo/perlin-mesh.mjs'
+                voxelFile: '/test/demo/layered-perlin-mesh.mjs'
+                //voxelFile: '/test/demo/perlin-mesh.mjs'
             });
             const markers = [];
             const addMarker = (x, y, marker)=>{
@@ -480,7 +481,6 @@
                 viz2.addMarker(marker);
             };
             engine.on('submesh', (submesh)=>{
-                console.log('ADDED SUBMESH', submesh.x, submesh.y )
                 viz2.addSubmesh(submesh);
             });
             (async()=>{
@@ -520,7 +520,8 @@
                     
                     addMarker(5, 5, avatar);
                     engine.focusOn(avatar);
-                    avatar.action('moveTo', {}, {x: 5, y: 20, z: 0});
+                    //avatar.action('moveTo', {}, {x: 5, y: 20, z: 0});
+                    avatar.action('moveTo', {}, {x: -20, y: 5, z: 0});
                     
                     tools((tool)=>{
                         tool.sceneAxes(new Vector3(0, 0, 0), 2);
@@ -535,18 +536,6 @@
                     });
                     
                     engine.on('state', (data)=>{
-                        data.markers.forEach((marker)=>{
-                            //console.log('^', marker);
-                            /*
-                            if(
-                                Math.floor(marker.position.x) === 0 &&
-                                Math.floor(marker.position.z) === 0
-                            ){
-                                engine.stop();
-                                throw new Error('position reset');
-                            } //*/
-                        });
-                        //console.log(data);
                         viz.update(data);
                         viz2.update(data);
                     });

@@ -40,7 +40,8 @@ export class MarkerEngine{
         let voxelFilePromise;
         if(options.voxelFile){
             (async ()=>{
-                voxelFilePromise = import(options.voxelFile);
+                const fileURL = new URL(options.voxelFile, import.meta.url);
+                voxelFilePromise = import(fileURL);
                 const { voxels } = await voxelFilePromise;
                 createVoxels = voxels;
                 const creationFn = generateMeshCreationFromVoxelFn(
