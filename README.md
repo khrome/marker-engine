@@ -1,5 +1,6 @@
 marker-engine
 ============================
+![markers on layered perlin mesh](https://github.com/khrome/preview-images/blob/master/marker-engine/mesh-attached.gif)
 An ESM marker interface for keeping marker calculations out of your render thread and handling game-world state
 
 Structure
