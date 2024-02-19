@@ -48,13 +48,16 @@ export const weldTreadmill = (submeshIndex)=>{
         const local = neighbors(dir);
         //console.log('neighbors', dir, local);
         if(local.north){ //weld the northern seam
-            console.log('H WELD')
-            console.log('WELD', dir, local.north)
-            submeshIndex[dir].weld(submeshIndex[local.north], 'bottom');
-            console.log('H WELD C')
+            if(dir.indexOf('west') !== -1){
+                //TODO: explore why west behaves differently
+                submeshIndex[local.north].weld(submeshIndex[dir], 'top')
+            }else{
+                submeshIndex[dir].weld(submeshIndex[local.north], 'bottom');
+            }
+            if(dir.indexOf('west') !== -1) console.log('H WELD C')
         }
         if(local.east){ //weld the eastern seam
-            console.log('WELD', dir, local.east)
+            //console.log('WELD', dir, local.east)
             submeshIndex[dir].weld(submeshIndex[local.east], 'left');
         }
     })

@@ -133,7 +133,7 @@ const copyRowCoords = (originSubmesh, destinationSubmesh, originRow, destination
             destinationSubmesh.coords[x+2] = updateIndex[
                 destinationSubmesh.coords[x]
             ];
-            console.log('SET', x % (16*3), destinationRow, orig, destinationSubmesh.coords[x+2])
+            //console.log('SET', x % (16*3), destinationRow, orig, destinationSubmesh.coords[x+2])
         }
     }
     let reaverage = null;

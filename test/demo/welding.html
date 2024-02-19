@@ -505,21 +505,33 @@
             const submeshA = new Submesh({x: 0, y: 0, voxelMesh});
             const submeshB = new Submesh({x: 1, y: 0, voxelMesh});
             const submeshC = new Submesh({x: 0, y: 1, voxelMesh});
+            const submeshD = new Submesh({x: -1, y: 0, voxelMesh});
+            const submeshE = new Submesh({x: -1, y: -1, voxelMesh});
             const modelA = submeshA.model();
             const modelB = submeshB.model();
             const modelC = submeshC.model();
+            const modelD = submeshD.model();
+            const modelE = submeshE.model();
             modelB.position.x = 16;
             modelC.position.y = 16;
+            
+            modelD.position.x = -16;
+            modelE.position.x = -16;
+            modelE.position.y = -16;
             
             
             console.log(modelA, modelB);
             
             submeshA.weld(submeshB, 'left');
             submeshC.weld(submeshA, 'top');
+            submeshD.weld(submeshA, 'left');
+            submeshD.weld(submeshE, 'top');
             
             scene.add(modelA);
             scene.add(modelB);
             scene.add(modelC);
+            scene.add(modelD);
+            scene.add(modelE);
             
             //console.log(submeshB.coords);
             renderer.setAnimationLoop(() => {
