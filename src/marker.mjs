@@ -5,6 +5,8 @@ const {
     Cylinder,
     Quaternion,
     Vec3,
+    Ray,
+    RaycastResult,
     Sphere
 } = CANNON;
 
@@ -33,7 +35,8 @@ const direction = {
     right: new Vector3(0, 1, 0),
     left: new Vector3(0, -1, 0),
     forward: new Vector3(1, 0, 0), //TBD: ??
-    backward: new Vector3(-1, 0, 0)
+    backward: new Vector3(-1, 0, 0),
+    up: new Vector3(0, 0, 1)
 };
 let raycaster = new Raycaster();
 let result = new Vector3();
@@ -59,6 +62,8 @@ export class Marker{
             'strafeLeft':'strafeLeft', 
             'strafeRight':'strafeRight', 
         });
+        this.meshAttached = typeof options.meshAttached === "boolean"?options.meshAttached:false;
+        console.log('ATT', this.meshAttached, typeof options.meshAttached, options.meshAttached)
         this.actions = Object.keys(
             enabledActions
         ).reduce((agg, key)=>{
@@ -242,6 +247,7 @@ export class Marker{
                 }
             }
         }
+        result.meshAttached = this.meshAttached;
         if(options && options.includeValues){
             result.values = this.values;
         }
@@ -334,11 +340,11 @@ export class Marker{
              origin.distanceTo(target) < maxDistance
          ){
             //todo: compute remaining time
-            this.mesh.position.copy(target);
+            this.moveTo(new Vector2(target.x, target.y), treadmill);
             return 0;
         }else{
             raycaster.ray.at(maxDistance, result);
-            this.moveTo(new Vector2(result.x, result.y));
+            this.moveTo(new Vector2(result.x, result.y), treadmill);
             return -1;
         } //*/
     }
@@ -426,11 +432,25 @@ export class Marker{
         return this.turn(delta=1, Marker.WIDDERSHINS, target, options, treadmill);
     }
     
-    moveTo(point){
+    moveTo(point, treadmill){
         //*
         const from = this.mesh.position.clone();
         this.mesh.position.x = point.x;
         this.mesh.position.y = point.y;
+        if(this.meshAttached){
+            const submesh = treadmill.getSubmeshAt(point.x, point.y);
+            if(submesh && submesh.mesh){
+                const intersection = new RaycastResult()
+                const ray = new Ray(
+                    new Vec3(point.x, point.y, 0),
+                    new Vec3(point.x, point.y, 16)
+                );
+                ray.intersectBody(submesh.mesh, intersection);
+                if(intersection.hitPointWorld.z){
+                    this.mesh.position.z = intersection.hitPointWorld.z;
+                }
+            }
+        }
         if(this.linked && this.linked.length){
             const delta = {
                 x: point.x - from.x,

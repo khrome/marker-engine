@@ -42,6 +42,28 @@ export const neighbors = (location)=>{
     }
 };
 
+export const tileForPos = (x, y)=>{
+    if(x < -16) return;
+    if(x < 0){
+        if(y < -16) return
+        if(y < 0) return 'southwest';
+        if(y < 16) return 'west';
+        if(y < 32) return 'northwest';
+    }
+    if(x < 16){
+        if(y < -16) return
+        if(y < 0) return 'south';
+        if(y < 16) return 'current';
+        if(y < 32) return 'north';
+    }
+    if(x < 16){
+        if(y < -16) return
+        if(y < 0) return 'southeast';
+        if(y < 16) return 'east';
+        if(y < 32) return 'northeast';
+    }
+}
+
 export const weldTreadmill = (submeshIndex)=>{
     const directions =  codirectionsByText[0].concat(codirectionsByText[1]).concat(codirectionsByText[2]);
     directions.reverse().forEach((dir)=>{

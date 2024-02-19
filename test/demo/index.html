@@ -469,7 +469,6 @@
             viz2.attach(viz2El);
             const engine = new MarkerEngine({
                 voxelFile: '/test/demo/layered-perlin-mesh.mjs'
-                //voxelFile: '/test/demo/perlin-mesh.mjs'
             });
             const markers = [];
             const addMarker = (x, y, marker)=>{
@@ -493,13 +492,14 @@
                             (Math.random()*48 -16),
                             new Marker({
                                 id : Math.floor(Math.random()*1000000000).toString(),
+                                meshAttached: true,
                                 values: {
                                     movementSpeed: 5
                                 }
                             })
                         )
                     }
-                    //*
+                    //*/
                     markers.forEach((marker)=>{
                         const position = {
                             x: (Math.random()*48 -16),
@@ -513,6 +513,7 @@
                     
                     const avatar = new Marker({
                         id : 'player-avatar',
+                        meshAttached: true,
                         values: {
                             movementSpeed: 5
                         }

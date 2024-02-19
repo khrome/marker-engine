@@ -19,13 +19,14 @@ import {
     //Trimesh,
     Material,
     Vec3,
+    Ray,
     Body
 } from './cannon-es.mjs';
 import {
     generateMeshCreationFromVoxelFn
 } from './voxel-mesh.mjs';
 
-import { allTiles, neighbors, Tile } from './tiles.mjs';
+import { allTiles, neighbors, Tile, tileForPos } from './tiles.mjs';
 
 //const self = {};
 
@@ -122,6 +123,10 @@ export const workerStateSetup = ()=>{
         submesh.mesh.position.y = submesh.y * 16;
         submesh.mesh.position.z = 0;
     };
+    self.getSubmeshAt = (x, y)=>{
+        const submeshName = tileForPos(x, y);
+        if(submeshName) return self.submeshes[submeshName];
+    }
     self.addMarker = (markerData)=>{
         //todo: look up against class index
         const marker = new Marker(markerData);
