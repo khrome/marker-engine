@@ -468,7 +468,9 @@
             import { create as createLights } from './lighting.mjs';
             import { create as createCamera } from './camera.mjs';
             import { create as createRenderer } from './renderer.mjs';
+            import { voxels } from './layered-perlin-mesh.mjs';
             import { enable, tools } from '../../src/development.mjs';
+            import { generateMeshCreationFromVoxelFn } from '../../src/voxel-mesh.mjs';
             
             //setup scene
             const scene = new Scene();
@@ -497,9 +499,12 @@
             const container = document.getElementById('viz2');
             container.append(renderer.domElement);
             
-            const submeshA = new Submesh({x: 0, y: 0});
-            const submeshB = new Submesh({x: 1, y: 0});
-            const submeshC = new Submesh({x: 0, y: 1});
+            const creationFn = generateMeshCreationFromVoxelFn(voxels);
+            const voxelMesh = creationFn('test-seed', 16);
+            
+            const submeshA = new Submesh({x: 0, y: 0, voxelMesh});
+            const submeshB = new Submesh({x: 1, y: 0, voxelMesh});
+            const submeshC = new Submesh({x: 0, y: 1, voxelMesh});
             const modelA = submeshA.model();
             const modelB = submeshB.model();
             const modelC = submeshC.model();
@@ -510,7 +515,7 @@
             console.log(modelA, modelB);
             
             submeshA.weld(submeshB, 'left');
-            submeshA.weld(submeshC, 'bottom');
+            submeshC.weld(submeshA, 'top');
             
             scene.add(modelA);
             scene.add(modelB);

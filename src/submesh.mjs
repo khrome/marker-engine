@@ -67,10 +67,45 @@ const copyColumnCoords = (originSubmesh, destinationSubmesh, originCol, destinat
             ];
         }
     }
+    let reaverage = null;
+    if(destinationCol === 0){
+        reaverage = 0.5;
+    }
+    if(destinationCol === 16){
+        reaverage = 15.5;
+    }
+    if(reaverage){
+        let quadIndex = null;
+        const quadInc = 3 * 3 * 4;
+        for(;quadIndex < len; quadIndex += quadInc){
+            if(
+                destinationSubmesh.coords[quadIndex+6] === reaverage &&
+                destinationSubmesh.coords[quadIndex+15] === reaverage &&
+                destinationSubmesh.coords[quadIndex+24] === reaverage &&
+                destinationSubmesh.coords[quadIndex+33] === reaverage
+            ){
+                const zValue = (
+                    destinationSubmesh.coords[quadIndex+2] +
+                    destinationSubmesh.coords[quadIndex+5] +
+                    destinationSubmesh.coords[quadIndex+11] +
+                    destinationSubmesh.coords[quadIndex+14] +
+                    destinationSubmesh.coords[quadIndex+20] +
+                    destinationSubmesh.coords[quadIndex+23] + 
+                    destinationSubmesh.coords[quadIndex+29] +
+                    destinationSubmesh.coords[quadIndex+32]
+                ) / 8
+                destinationSubmesh.coords[quadIndex+8] = zValue;
+                destinationSubmesh.coords[quadIndex+17] = zValue;
+                destinationSubmesh.coords[quadIndex+26] = zValue;
+                destinationSubmesh.coords[quadIndex+35] = zValue;
+            }
+        }
+    }
     
 };
 
 const copyRowCoords = (originSubmesh, destinationSubmesh, originRow, destinationRow)=>{
+    console.log('START H WELD')
     const updateIndex = {};
     let x=0;
     let len = originSubmesh.coords.length;
@@ -98,8 +133,44 @@ const copyRowCoords = (originSubmesh, destinationSubmesh, originRow, destination
             destinationSubmesh.coords[x+2] = updateIndex[
                 destinationSubmesh.coords[x]
             ];
+            console.log('SET', x % (16*3), destinationRow, orig, destinationSubmesh.coords[x+2])
         }
     }
+    let reaverage = null;
+    if(destinationRow === 16){
+        reaverage = 15.5;
+    }
+    if(destinationRow === 0){
+        reaverage = 0.5;
+    }
+    if(reaverage){
+        let quadIndex = null;
+        const quadInc = 3 * 3 * 4;
+        for(;quadIndex < len; quadIndex += quadInc){
+            if(
+                destinationSubmesh.coords[quadIndex+7] === reaverage &&
+                destinationSubmesh.coords[quadIndex+16] === reaverage &&
+                destinationSubmesh.coords[quadIndex+25] === reaverage &&
+                destinationSubmesh.coords[quadIndex+34] === reaverage
+            ){
+                const zValue = (
+                    destinationSubmesh.coords[quadIndex+2] +
+                    destinationSubmesh.coords[quadIndex+5] +
+                    destinationSubmesh.coords[quadIndex+11] +
+                    destinationSubmesh.coords[quadIndex+14] +
+                    destinationSubmesh.coords[quadIndex+20] +
+                    destinationSubmesh.coords[quadIndex+23] + 
+                    destinationSubmesh.coords[quadIndex+29] +
+                    destinationSubmesh.coords[quadIndex+32]
+                ) / 8
+                destinationSubmesh.coords[quadIndex+8] = zValue;
+                destinationSubmesh.coords[quadIndex+17] = zValue;
+                destinationSubmesh.coords[quadIndex+26] = zValue;
+                destinationSubmesh.coords[quadIndex+35] = zValue;
+            }
+        }
+    }
+    console.log('STOP H WELD', destinationRow)
     
 };
 
