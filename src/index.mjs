@@ -7,13 +7,12 @@ if(typeof require !== 'undefined') internalRequire = require;
 const ensureRequire = ()=> (!internalRequire) && (internalRequire = mod.createRequire(import.meta.url));
 //*/
 import { Worker } from './worker.mjs';
-import { Marker } from './marker.mjs';
+import { Marker, Projectile, PhysicsProjectile, Scenery, Monster } from './marker.mjs';
 import { Submesh } from './submesh.mjs';
 import { allTiles, neighbors, weldTreadmill } from './tiles.mjs';
 import { tools, enable } from './development.mjs';
 import { generateMeshCreationFromVoxelFn } from './voxel-mesh.mjs';
 
-export { Marker, tools, enable };
 
 import {
     Clock
@@ -216,4 +215,4 @@ export class MarkerEngine{
     
 }
 
-export { Submesh }
+export { Submesh, Marker, Projectile, PhysicsProjectile, Scenery, Monster, tools, enable }

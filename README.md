@@ -19,7 +19,11 @@ Usage
 -----
 
 ```javascript
-const engine = new MarkerEngine();
+const engine = new MarkerEngine({
+    // the mesh voxel generation algorithm for the groundlayer
+    voxelFile: '/mesh-voxel-generator.mjs'
+});
+// marker may be extended to override the default .model() and .body()
 const marker = new Marker({
     id : 'foo',
     position: {
@@ -29,13 +33,37 @@ const marker = new Marker({
     }
 });
 engine.addMarker(marker);
+// track this marker as the center of the treadmill
 engine.on('state', ()=>{
     // data.markers contain marker updates
-    // data.submeshes contain submesh updates
     // use the updated positions to change the viz
 });
+engine.on('submesh', (submesh)=>{
+    // submesh is a new submesh
+    // compute mesh from voxels and add to viz
+});
+engine.on('remove-submesh', (submesh)=>{
+    // remove this submesh from the viz
+});
+engine.on('remove-markers', (markers)=>{
+    // markers is a list of markers to remove from the viz
+});
+// add an action to the marker action queue
 marker.action('moveTo', {}, {x: 10, y: 10, z: 0});
+// start the simulation
 engine.start();
+```
+
+The voxel generation file looks like: 
+
+```js
+export const voxels = (x, y, depth)=>{
+    const results = [];
+    for(let lcv=0; lcv<256; lcv++){
+        results.push(0);
+    }
+    return results;
+};
 ```
 
 Testing
