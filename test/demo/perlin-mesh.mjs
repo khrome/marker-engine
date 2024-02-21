@@ -318,3 +318,13 @@ export const voxels = (x, y, depth, options={})=>{
     }
     return results;
 };
+
+export const markers = (x, y, depth, options={})=>{
+    const markers = [];
+    return markers;
+};
+
+export const scripts = (x, y, depth, options={})=>{
+    const scripts = {};
+    return scripts;
+};

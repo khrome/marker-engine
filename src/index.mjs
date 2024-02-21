@@ -41,11 +41,13 @@ export class MarkerEngine{
             (async ()=>{
                 const fileURL = new URL(options.voxelFile, import.meta.url);
                 voxelFilePromise = import(fileURL);
-                const { voxels } = await voxelFilePromise;
+                const { voxels, markers, scripts } = await voxelFilePromise;
                 createVoxels = voxels;
                 const creationFn = generateMeshCreationFromVoxelFn(
-                    options.createVoxels
+                    createVoxels
                 );
+                this.createMarkers = markers;
+                this.createScripts = scripts;
                 this.voxelMesh = creationFn('test-seed', 16);
             })();
         }
@@ -55,9 +57,11 @@ export class MarkerEngine{
                 submeshData.voxelMesh = this.voxelMesh;
             }
             const submesh = new Submesh(submeshData);
+            const markers = this.createMarkers(submeshData.worldX, submeshData.worldY);
+            console.log('>>>', submeshData, markers);
             this.addSubmesh(submesh);
             this.submeshes[submeshData.location] = submesh;
-            if(Object.keys(this.submeshes).length === 9){
+            if(Object.keys(this.submeshes).length === 9){ //initial submeshes loaded
                 weldTreadmill(this.submeshes);
                 Object.keys(this.submeshes).forEach((key)=>{
                     this.emit('submesh', this.submeshes[key]);

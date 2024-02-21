@@ -162,6 +162,8 @@ export class Marker{
             shape: new Cylinder(size, size),
             mass: 1
         });
+        if(!this.mesh) this.mesh = body;
+        this.normalizeMesh();
         return body;
     }
     
@@ -197,6 +199,8 @@ export class Marker{
             const axes = tool.axes(offset);
             object.add(axes);
         });
+        if(!this.mesh) this.mesh = object;
+        this.normalizeMesh();
         return object;
     }
     
