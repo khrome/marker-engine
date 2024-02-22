@@ -6,7 +6,7 @@ let internalRequire = null;
 if(typeof require !== 'undefined') internalRequire = require;
 const ensureRequire = ()=> (!internalRequire) && (internalRequire = mod.createRequire(import.meta.url));
 //*/
-import { Worker } from './worker.mjs';
+import { Worker } from '@environment-safe/esm-worker';
 import { Marker, Projectile, PhysicsProjectile, Scenery, Monster } from './marker.mjs';
 import { Submesh } from './submesh.mjs';
 import { allTiles, neighbors, weldTreadmill } from './tiles.mjs';
@@ -16,13 +16,13 @@ import { generateMeshCreationFromVoxelFn } from './voxel-mesh.mjs';
 
 import {
     Clock
-} from "three";
+} from "../node_modules/three/build/three.module.js";
 
 /**
  * A JSON object
  * @typedef { object } JSON
  */
-import { Emitter } from 'extended-emitter';
+import { Emitter } from '../node_modules/extended-emitter/./extended-emitter.mjs';
  
 export class MarkerEngine{
     constructor(options={}){
@@ -58,7 +58,7 @@ export class MarkerEngine{
             }
             const submesh = new Submesh(submeshData);
             const markers = this.createMarkers(submeshData.worldX, submeshData.worldY);
-            console.log('>>>', submeshData, markers);
+            //console.log('>>>', submeshData, markers);
             this.addSubmesh(submesh);
             this.submeshes[submeshData.location] = submesh;
             if(Object.keys(this.submeshes).length === 9){ //initial submeshes loaded
@@ -147,7 +147,7 @@ export class MarkerEngine{
             type: 'add-marker',
             marker: data
         }));
-        console.log('added marker')
+        //console.log('added marker')
     }
     
     addSubmesh(submesh){
@@ -166,14 +166,20 @@ export class MarkerEngine{
             type: 'add-submesh',
             submesh: data
         }));
-        console.log('added submesh')
+        //console.log('added submesh')
     }
     
     async initialize(){
         try{
             const url = new URL('./messaging.mjs', import.meta.url);
-            this.worker = new Worker(url, {type:'module'});
+            this.worker = new Worker(url, {
+                inheritMap:true, 
+                root: import.meta.url,
+                type:'module'
+            });
+            await this.worker.ready;
             this.worker.onmessage = (e)=>{
+                if(typeof e.data !== 'string' ) return;
                 const data = JSON.parse(e.data);
                 if(data.type === 'state'){
                     this.emit('state', data.state)
@@ -201,7 +207,7 @@ export class MarkerEngine{
             }));
             
         }catch(ex){
-            consle.log('WORKER INIT ERROR', ex)
+            console.log('WORKER INIT ERROR', ex)
         }
     }
     

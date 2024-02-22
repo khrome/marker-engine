@@ -73,7 +73,6 @@ export class Visualizer3D{
         tools((tool)=>{
             tool.axes(marker.position)
         });
-        console.log('ADDED', marker.mesh, marker.mesh.position.x, marker.mesh.position.y)
     }
     
     addSubmesh(incomingSubmesh){

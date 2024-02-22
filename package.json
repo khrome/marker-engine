@@ -105,6 +105,7 @@
     },
     "dependencies": {
         "@environment-safe/canvas": "^4.2.0",
+        "@environment-safe/esm-worker": "^0.0.1",
         "@environment-safe/execution": "^0.0.3",
         "bitwise-logger": "^0.0.4",
         "browser-or-node": "^2.1.1",

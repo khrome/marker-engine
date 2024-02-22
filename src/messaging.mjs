@@ -2,7 +2,7 @@
     Clock,
     Raycaster,
     Vector3
-} from '../node_modules/three/build/three.module.js';
+} from 'three';
 import {
     CBOR
 } from './CBOR.mjs';
@@ -26,6 +26,12 @@ import {
     generateMeshCreationFromVoxelFn
 } from './voxel-mesh.mjs';
 
+import { Logger } from 'bitwise-logger';
+import consoleBridge from 'bitwise-logger/src/console.js';
+
+const logger = new Logger(); // create a new logger
+logger.level = Logger.ERROR & Logger.INFO;
+
 import { allTiles, neighbors, Tile, tileForPos } from './tiles.mjs';
 
 //const self = {};
@@ -35,7 +41,7 @@ export const messageHandler = async (e)=>{
     if(data.type){
         switch(data.type){
             case 'world': //incoming world definition
-                console.log('WORLD', data);
+                logger.log(data, Logger.INFO);
                 let voxelFilePromise;
                 if(data.world.voxelFile){
                     voxelFilePromise = import(data.world.voxelFile);
@@ -308,7 +314,7 @@ export const workerStateSetup = ()=>{
         let removedMarkers = [];
         const main = ()=>{
             try{
-                delta = clock.getDelta();
+                delta = self.clock.getDelta();
                 evaluateTurn(delta);
                 currentState = markerStates();
                 if(currentState.markers.length){

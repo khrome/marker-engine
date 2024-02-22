@@ -63,7 +63,6 @@ export class Marker{
             'strafeRight':'strafeRight', 
         });
         this.meshAttached = typeof options.meshAttached === "boolean"?options.meshAttached:false;
-        console.log('ATT', this.meshAttached, typeof options.meshAttached, options.meshAttached)
         this.actions = Object.keys(
             enabledActions
         ).reduce((agg, key)=>{
