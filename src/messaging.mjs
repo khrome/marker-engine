@@ -46,11 +46,12 @@ export const messageHandler = async (e)=>{
                 if(data.world.voxelFile){
                     voxelFilePromise = import(data.world.voxelFile);
                     (async ()=>{
-                        const { voxels } = await voxelFilePromise;
+                        const { voxels, markers } = await voxelFilePromise;
                         const creationFn = generateMeshCreationFromVoxelFn(
                             voxels
                         );
                         self.voxelMesh = creationFn('test-seed', 16);
+                        self.createMarkers = markers;
                     })();
                 }
                 self.world = data.world;
@@ -62,24 +63,38 @@ export const messageHandler = async (e)=>{
                     
                 }
                 let submeshData = [];
-                let submesh = null;
+                let currentMarkers = [];
                 if(voxelFilePromise) await voxelFilePromise;
-                allTiles((tile, location)=>{
-                    submesh = new Submesh({
+                await allTiles(async (tile, location)=>{
+                    const submesh = new Submesh({
                         x: tile.x,
                         y: tile.y,
                         tileX: tile.x,
                         tileY: tile.y,
                         voxelMesh: self.voxelMesh
                     });
+                    const localMarkers = await self.createMarkers(tile.x, tile.y);
+                    localMarkers.forEach((marker)=>{
+                        marker.adoptedBySubmesh(submesh);
+                    });
                     self.addSubmesh(submesh, location);
                     const data = submesh.data();
                     data.location = location
                     submeshData.push(data);
+                    localMarkers.forEach((marker)=>{
+                        self.addMarker(marker);
+                    });
+                    currentMarkers = currentMarkers.concat(
+                        localMarkers.map((marker)=> marker.data())
+                    );
                 });
                 self.postMessage(JSON.stringify({
                     type:'submesh-update', 
                     submesh: submeshData
+                }));
+                self.postMessage(JSON.stringify({
+                    type:'create-markers', 
+                    markers: currentMarkers
                 }));
                 break;
             case 'add-submesh': //incoming submesh definition
@@ -132,13 +147,14 @@ export const workerStateSetup = ()=>{
     self.getSubmeshAt = (x, y)=>{
         const submeshName = tileForPos(x, y);
         if(submeshName) return self.submeshes[submeshName];
-    }
+    };
     self.addMarker = (markerData)=>{
         //todo: look up against class index
         const marker = new Marker(markerData);
         self.markers.push(marker);
         const physicsBody = marker.body();
-        marker.mesh = physicsBody;
+        marker.mesh = physicsBody; //TODO: remove (now side-effect)
+        marker.adoptedByTreadmill(this);
         marker.mesh.position.x = marker.position.x;
         marker.mesh.position.y = marker.position.y;
         marker.mesh.position.z = marker.position.z;
@@ -255,6 +271,8 @@ export const workerStateSetup = ()=>{
                         const data = submesh.data();
                         data.location = location;
                         submeshData.push(data);
+                        const localMarkers = self.createMarkers(x, y);
+                        console.log('CM', localMarkers);
                         resolve(submesh);
                     }catch(ex){
                         reject(ex);

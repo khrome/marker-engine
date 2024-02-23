@@ -76,7 +76,6 @@ export const weldTreadmill = (submeshIndex)=>{
             }else{
                 submeshIndex[dir].weld(submeshIndex[local.north], 'bottom');
             }
-            if(dir.indexOf('west') !== -1) console.log('H WELD C')
         }
         if(local.east){ //weld the eastern seam
             //console.log('WELD', dir, local.east)
@@ -85,10 +84,15 @@ export const weldTreadmill = (submeshIndex)=>{
     })
 };
 
-export const allTiles = (handler)=>{
+export const allTiles = async (handler)=>{
+    const allResolutions = [];
     Object.keys(direction).forEach((dir)=>{
-        handler(direction[dir], dir);
+        allResolutions.push(new Promise(async (resolve)=>{
+            await handler(direction[dir], dir);
+            resolve();
+        }));
     });
+    await Promise.all(allResolutions);
 };
 
 const direction = {

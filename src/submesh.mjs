@@ -105,7 +105,6 @@ const copyColumnCoords = (originSubmesh, destinationSubmesh, originCol, destinat
 };
 
 const copyRowCoords = (originSubmesh, destinationSubmesh, originRow, destinationRow)=>{
-    console.log('START H WELD')
     const updateIndex = {};
     let x=0;
     let len = originSubmesh.coords.length;
@@ -170,7 +169,6 @@ const copyRowCoords = (originSubmesh, destinationSubmesh, originRow, destination
             }
         }
     }
-    console.log('STOP H WELD', destinationRow)
     
 };
 

@@ -36,7 +36,10 @@ engine.addMarker(marker);
 // track this marker as the center of the treadmill
 engine.on('state', ()=>{
     // data.markers contain marker updates
-    // use the updated positions to change the viz
+    // use position + quaternion to update the viz
+});
+engine.on('add-markers', (markers)=>{
+    // markers were found when loading a submesh
 });
 engine.on('submesh', (submesh)=>{
     // submesh is a new submesh

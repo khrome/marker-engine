@@ -51,7 +51,9 @@ const quaternionToEulerZ = (q)=>{
 export class Marker{
     static CLOCKWISE = -1;
     static WIDDERSHINS = 1;
+    treadmillInit = null;
     constructor(options={}){
+        this.options = options;
         const enabledActions = (options.actions || {
             'moveTo':'moveTo', 
             'turn':'turn', 
@@ -76,9 +78,15 @@ export class Marker{
         this.actionQueue = [];
         this.position = new Vector3();
         if(options.position){
-            this.position.x = options.position.x;
-            this.position.y = options.position.y;
-            this.position.z = options.position.z;
+            this.position.x = options.position.x || 0;
+            this.position.y = options.position.y || 0;
+            this.position.z = options.position.z || 0;
+        }
+        if(options.x){
+            this.position = {};
+            this.position.x = options.x || 0;
+            this.position.y = options.y || 0;
+            this.position.z = options.z || 0;
         }
         this.orientation = new Vector3();
         if(options.quaternion){
@@ -100,6 +108,26 @@ export class Marker{
             'health' : 10,
             'color' : '#00FF00'
         })
+    }
+    
+    adoptedBySubmesh(submesh){
+        if(this.options.x){
+            const x = submesh.x*16 + this.options.x;
+            const y = submesh.y*16 + this.options.y;
+            const z = 0;
+            if(!this.position) this.position = {};
+            this.position.x = x;
+            this.position.y = y;
+            this.position.z = z;
+            if(this.mesh){
+                this.mesh.position.x = x;
+                this.mesh.position.y = y;
+                this.mesh.position.z = z;
+            }
+        }
+    }
+    
+    adoptedByTreadmill(treadmill){
     }
     
     normalizeMesh(){

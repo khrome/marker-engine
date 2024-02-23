@@ -119,7 +119,6 @@ export class Visualizer3D{
             this.scene.remove(submesh.mesh);
         });
         engine.on('remove-markers', (markers)=>{
-            console.log('viz RM', markers);
             markers.forEach((marker)=>{
                 this.scene.remove(marker.mesh);
             })

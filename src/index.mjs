@@ -9,7 +9,7 @@ const ensureRequire = ()=> (!internalRequire) && (internalRequire = mod.createRe
 import { Worker } from '@environment-safe/esm-worker';
 import { Marker, Projectile, PhysicsProjectile, Scenery, Monster } from './marker.mjs';
 import { Submesh } from './submesh.mjs';
-import { allTiles, neighbors, weldTreadmill } from './tiles.mjs';
+import { allTiles, neighbors, weldTreadmill, tileForPos } from './tiles.mjs';
 import { tools, enable } from './development.mjs';
 import { generateMeshCreationFromVoxelFn } from './voxel-mesh.mjs';
 
@@ -101,6 +101,11 @@ export class MarkerEngine{
                 marker.mesh.position.y += y*16;
             });
         });
+    }
+    
+    getSubmeshAt = (x, y)=>{
+        const submeshName = tileForPos(x, y);
+        if(submeshName) return this.submeshes[submeshName];
     }
     
     focusOn(marker){
@@ -199,6 +204,12 @@ export class MarkerEngine{
                         });
                     });
                     this.emit('remove-markers', markerObjects);
+                }
+                if(data.type === 'create-markers'){
+                    const markerObjects = data.markers.map((data)=>{
+                        return new Marker(data);
+                    });
+                    this.emit('create-markers', markerObjects);
                 }
             };
             this.worker.postMessage(JSON.stringify({
