@@ -471,7 +471,9 @@
             viz.attach(vizEl);
             viz2.attach(viz2El);
             const engine = new MarkerEngine({
-                voxelFile: '/test/demo/layered-perlin-mesh.mjs'
+                voxelFile: '/test/demo/layered-perlin-mesh.mjs',
+                markerTypesFile: '/src/default-markers.mjs',
+                container: '#viz2',
             });
             const markers = [];
             const addMarker = (x, y, marker)=>{

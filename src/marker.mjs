@@ -55,6 +55,7 @@ export class Marker{
     treadmillInit = null;
     constructor(options={}){
         this.options = options;
+        if(!this.options.height) this.options.height = 2;
         const enabledActions = (options.actions || {
             'moveTo':'moveTo', 
             'turn':'turn', 
@@ -139,6 +140,7 @@ export class Marker{
     
     //external action: a request to add this to the actionQueue
     action(name, options, target){
+        console.log('#moveTo')
         const targetV = new Vector3(
             target.x, 
             target.y, 
@@ -165,6 +167,7 @@ export class Marker{
                     target
                 }
             };
+            console.log('MT', action)
             this.engine.worker.postMessage(JSON.stringify(action));
             console.log('remote action', action)
         }else{
@@ -201,14 +204,15 @@ export class Marker{
             wireframe: true
         })
         const size = this.size || 1;
-        const geometry = new CylinderGeometry(size, size);
-        geometry.rotateX(1.5);
+        const geometry = new CylinderGeometry(size, size, this.options.height);
+        geometry.applyMatrix4( new Matrix4().makeTranslation(0, this.options.height/2, 0));
+        geometry.rotateX(1.57);
         this.selectionMesh = new Mesh(geometry, material)
         return this.selectionMesh;
     }
     
     model(){
-        const height = 2; //this.options.height || 2;
+        const height = this.options.height || 2;
         const geometry = new CylinderGeometry( this.size, this.size, height, 8 );
         geometry.applyMatrix4( new Matrix4().makeRotationX( Math.PI / 2 ) );
         geometry.applyMatrix4( new Matrix4().makeTranslation( 0,  0, height/2) );
@@ -292,6 +296,7 @@ export class Marker{
             }
         }
         result.meshAttached = this.meshAttached;
+        result.type = this.constructor.name;
         if(options && options.includeValues){
             result.values = this.values;
         }
@@ -413,6 +418,7 @@ export class Marker{
     }
     
     turn(delta=1, direction, localTarget, options, treadmill){
+        console.log('TRN', delta, direction , localTarget)
         const target = treadmill.localPositionFor(localTarget);
         const turnSpeed = this.values.turnSpeed || 0.00001;
         const maxRotation = turnSpeed * delta;
@@ -533,6 +539,14 @@ export class Marker{
 export class Projectile extends Marker{
     constructor(options={}){
         super(options);
+    }
+    
+    body(){
+        const body = new Body({
+            shape: new Sphere(this.size || 1),
+            mass: 1
+        });
+        return body;
     }
 }
 

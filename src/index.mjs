@@ -174,7 +174,7 @@ export class MarkerEngine{
         //console.log('added submesh')
     }
     
-    async initialize(){
+    async initialize(preloadHandler){
         try{
             if(this.options.markerTypesFile){
                 const { markerTypes } = await import(this.options.markerTypesFile);
@@ -186,6 +186,7 @@ export class MarkerEngine{
                     this.markerTypes = this.options.markerTypes
                 }
             }
+            if(preloadHandler) await preloadHandler(this.markerTypes);
             const url = new URL('./messaging.mjs', import.meta.url);
             this.worker = new Worker(url, {
                 inheritMap: true, 
