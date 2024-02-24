@@ -61,6 +61,42 @@ export class Visualizer3D{
         
         this.scene = scene;
         this.camera = camera;
+        
+        const selection = Marker.enableSelection({ 
+            container: document.body, 
+            camera, 
+            renderer, 
+            treadmill,
+            onMouseOver: (marker)=>{
+                console.log('mouseover', marker);
+                /*
+                if(marker.mesh.highlightedOutline && !selection.contains(marker)){
+                    marker.mesh.highlightedOutline.position.copy(marker.mesh.position);
+                    scene.add(marker.mesh.highlightedOutline);
+                } //*/
+            },
+            onMouseAway: (marker)=>{
+                /*
+                if(marker.mesh.highlightedOutline && !selection.contains(marker)){
+                    scene.remove(marker.mesh.highlightedOutline);
+                } //*/
+            },
+            onSelect: (marker)=>{
+                console.log('select', marker);
+                /*if(marker.mesh.selectedOutline){
+                    marker.mesh.selectedOutline.position.copy(marker.mesh.position);
+                    scene.add(marker.mesh.selectedOutline);
+                }*/
+            },
+            onDeselect: (marker)=>{
+                /*if(marker.mesh.selectedOutline){
+                    console.log('deselect', marker);
+                    scene.remove(marker.mesh.selectedOutline);
+                } //*/
+            },
+            markerTypes: [Cube]
+        });
+        
         enable({ scene, renderer, light: directional , camera });
     }
     

@@ -17,7 +17,7 @@ import {
 } from '../node_modules/three/build/three.module.js';
 //import { TextGeometry } from '../node_modules/three/examples/jsm/geometries/TextGeometry.js';
 //import * as dat from 'dat.gui';
-//import SpriteText from '../node_modules/three-spritetext/dist/three-spritetext.mjs';
+import SpriteText from 'three-spritetext';
 import Logger from '../node_modules/bitwise-logger/bitwise-logger.js';
 
 //export const tools=()=>{};

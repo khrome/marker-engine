@@ -176,9 +176,19 @@ export class MarkerEngine{
     
     async initialize(){
         try{
+            if(this.options.markerTypesFile){
+                const { markerTypes } = await import(this.options.markerTypesFile);
+                const types = await markerTypes();
+                this.markerTypes = types;
+                console.log('TYPES LOADED', this.markerTypes.map((type)=>type.constructor.name));
+            }else{
+                if(this.options.markerTypes){
+                    this.markerTypes = this.options.markerTypes
+                }
+            }
             const url = new URL('./messaging.mjs', import.meta.url);
             this.worker = new Worker(url, {
-                inheritMap:true, 
+                inheritMap: true, 
                 root: import.meta.url,
                 type:'module'
             });

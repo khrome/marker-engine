@@ -12,6 +12,7 @@ const {
 
  import {
     CylinderGeometry,
+    MeshBasicMaterial,
     MeshPhongMaterial,
     Mesh,
     Group,
@@ -24,7 +25,7 @@ const {
     LineBasicMaterial,
     Vector2,
     Vector3
-} from '../node_modules/three/build/three.module.js';
+} from 'three';
 
 import { tools } from './development.mjs';
 import * as actions from './actions.mjs';
@@ -192,6 +193,18 @@ export class Marker{
         if(!this.mesh) this.mesh = body;
         this.normalizeMesh();
         return body;
+    }
+    
+    selection(){
+        const material = new MeshBasicMaterial({
+            color: 0xffffff,
+            wireframe: true
+        })
+        const size = this.size || 1;
+        const geometry = new CylinderGeometry(size, size);
+        geometry.rotateX(1.5);
+        this.selectionMesh = new Mesh(geometry, material)
+        return this.selectionMesh;
     }
     
     model(){
