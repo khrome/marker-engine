@@ -26,11 +26,7 @@ import {
     generateMeshCreationFromVoxelFn
 } from './voxel-mesh.mjs';
 
-import { Logger } from 'bitwise-logger';
-import consoleBridge from 'bitwise-logger/src/console.js';
-
-const logger = new Logger(); // create a new logger
-logger.level = Logger.ERROR & Logger.INFO;
+import Logger from 'bitwise-logger';
 
 import { allTiles, neighbors, Tile, tileForPos } from './tiles.mjs';
 
@@ -41,7 +37,7 @@ export const messageHandler = async (e)=>{
     if(data.type){
         switch(data.type){
             case 'world': //incoming world definition
-                logger.log(data, Logger.INFO);
+                Logger.log(data, Logger.INFO);
                 let voxelFilePromise;
                 if(data.world.voxelFile){
                     voxelFilePromise = import(data.world.voxelFile);
@@ -125,7 +121,7 @@ export const messageHandler = async (e)=>{
                 const action = data.action;
                 const subject = self.markers.find((marker)=> marker.id == action.id );
                 subject.action(action.name, action.options, action.target);
-                console.log(`object for id: ${data.action.id}`, subject, action);
+                Logger.log(`object for id: ${data.action.id}`, Logger.DEBUG & Logger.INFO, subject, action);
                 
         }
     }
@@ -205,18 +201,15 @@ export const workerStateSetup = ()=>{
         let marker = null;
         for(let lcv=0; lcv < self.markers.length; lcv++){
             marker = self.markers[lcv];
-            //*
             const markerReturn = (
                 self.onlyReturnDirtyObjects === false ||
                 marker.dirty
-            )?true:false; //*/
-            //console.log('??', markerReturn, self.onlyReturnDirtyObjects, marker.dirty)
+            )?true:false;
             if(markerReturn){
                 markers.push(marker.data());
                 marker.dirty = false;
             }
         }
-        //console.log('??', markers)
         return {
             markers
         };
@@ -273,7 +266,6 @@ export const workerStateSetup = ()=>{
                         data.location = location;
                         submeshData.push(data);
                         const localMarkers = self.createMarkers(x, y);
-                        console.log('CM', localMarkers);
                         resolve(submesh);
                     }catch(ex){
                         reject(ex);
@@ -314,7 +306,6 @@ export const workerStateSetup = ()=>{
                    worldY: submesh.worldY
                 });
             });
-            console.log('REMOVALS', removalData);
             self.postMessage(JSON.stringify({
                 type:'submesh-remove', 
                 removals: removalData
@@ -401,4 +392,4 @@ try{
 }catch(ex){
     console.log('worker startup error', ex)
 }
-console.log('WORKER RUNNING')
+Logger.log('WORKER RUNNING')

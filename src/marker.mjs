@@ -168,7 +168,6 @@ export class Marker{
                     target
                 }
             };
-            console.log('MT', action)
             this.engine.worker.postMessage(JSON.stringify(action));
             console.log('remote action', action)
         }else{
@@ -391,7 +390,8 @@ export class Marker{
          ){
             //todo: compute remaining time
             this.moveTo(new Vector2(target.x, target.y), treadmill);
-            return 0;
+            const remainder = (origin.distanceTo(target) / maxDistance) * delta;
+            return remainder;
         }else{
             raycaster.ray.at(maxDistance, result);
             this.moveTo(new Vector2(result.x, result.y), treadmill);
@@ -419,7 +419,6 @@ export class Marker{
     }
     
     turn(delta=1, direction, localTarget, options, treadmill){
-        //console.log('TRN', delta, direction , localTarget)
         const target = treadmill.localPositionFor(localTarget);
         const turnSpeed = this.values.turnSpeed || 0.00001;
         const maxRotation = turnSpeed * delta;
