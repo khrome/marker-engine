@@ -205,10 +205,11 @@ export const workerStateSetup = ()=>{
         let marker = null;
         for(let lcv=0; lcv < self.markers.length; lcv++){
             marker = self.markers[lcv];
+            //*
             const markerReturn = (
                 self.onlyReturnDirtyObjects === false ||
                 marker.dirty
-            )?true:false;
+            )?true:false; //*/
             //console.log('??', markerReturn, self.onlyReturnDirtyObjects, marker.dirty)
             if(markerReturn){
                 markers.push(marker.data());

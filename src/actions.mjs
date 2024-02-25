@@ -11,6 +11,7 @@ export const moveTo = (delta, marker, target, options ={}, treadmill)  => { //me
     //todo = test "crow flies" obstruction, if obstructed = path find
     //marker.action('turn', treadmill.worldPointFor(target), options, treadmill);
     //marker.action('forward', treadmill.worldPointFor(target), options, treadmill);
+    console.log('==>', marker, target, options);
     marker.action('turn', options, target, treadmill);
     marker.action('forward', options, target, treadmill);
     return delta; 

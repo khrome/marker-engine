@@ -67,6 +67,7 @@ export class MarkerEngine{
                     this.emit('submesh', this.submeshes[key]);
                 });
                 this.emit('load', {});
+                
                 //now it's time to weld the submeshes edge-to-edge
             }
         });
@@ -217,8 +218,16 @@ export class MarkerEngine{
                     this.emit('remove-markers', markerObjects);
                 }
                 if(data.type === 'create-markers'){
+                    const types = this.markerTypes;
                     const markerObjects = data.markers.map((data)=>{
-                        return new Marker(data);
+                        let instance = null;
+                        types.forEach((type)=>{
+                            if(type.prototype.constructor.name === data.type){
+                                instance = new type(data);
+                            }
+                        });
+                        console.log('new marker', instance)
+                        return instance;
                     });
                     this.emit('create-markers', markerObjects);
                 }

@@ -140,7 +140,6 @@ export class Marker{
     
     //external action: a request to add this to the actionQueue
     action(name, options, target){
-        console.log('#moveTo')
         const targetV = new Vector3(
             target.x, 
             target.y, 
@@ -148,12 +147,14 @@ export class Marker{
         );
         this.target = targetV;
         tools((tool)=>{
-            const dir = new Vector3();
-            dir.subVectors( targetV, this.mesh.position ).normalize();
-            raycaster.ray.origin.copy(this.mesh.position);
-            raycaster.ray.direction.copy(dir);
-            tool.showRay(raycaster, `target-${this.id}`)
-            tool.sceneAxes(targetV);
+            if(this.mesh.position){
+                const dir = new Vector3();
+                dir.subVectors( targetV, this.mesh.position ).normalize();
+                raycaster.ray.origin.copy(this.mesh.position);
+                raycaster.ray.direction.copy(dir);
+                tool.showRay(raycaster, `target-${this.id}`)
+                tool.sceneAxes(targetV);
+            }
         });
         if(this.engine){
             //TODO: if we're already attached, remove
@@ -418,7 +419,7 @@ export class Marker{
     }
     
     turn(delta=1, direction, localTarget, options, treadmill){
-        console.log('TRN', delta, direction , localTarget)
+        //console.log('TRN', delta, direction , localTarget)
         const target = treadmill.localPositionFor(localTarget);
         const turnSpeed = this.values.turnSpeed || 0.00001;
         const maxRotation = turnSpeed * delta;
@@ -475,11 +476,11 @@ export class Marker{
     }
     
     turnRight(delta=1, target, options, treadmill){
-        return this.turn(delta=1, Marker.CLOCKWISE, target, options, treadmill);
+        return this.turn(delta, Marker.CLOCKWISE, target, options, treadmill);
     }
     
     turnLeft(delta=1, target, options, treadmill){
-        return this.turn(delta=1, Marker.WIDDERSHINS, target, options, treadmill);
+        return this.turn(delta, Marker.WIDDERSHINS, target, options, treadmill);
     }
     
     moveTo(point, treadmill){
