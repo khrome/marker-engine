@@ -212,6 +212,10 @@ export class Marker{
     }
     
     model(){
+        if(this.modelObject){
+            this.mesh = this.modelObject;
+            return this.mesh;
+        }
         const height = this.options.height || 2;
         const geometry = new CylinderGeometry( this.size, this.size, height, 8 );
         geometry.applyMatrix4( new Matrix4().makeRotationX( Math.PI / 2 ) );
@@ -342,9 +346,9 @@ export class Marker{
         //if there's remaining time after depleting actions, it's spent idle
     }
     
-    moveInOrientation(directionVector, delta=1, localTarget, treadmill){
+    moveInOrientation(directionVector, delta=1, worldTarget, treadmill){
         //*
-        const target = treadmill.localPositionFor(localTarget);
+        const target = treadmill.localPositionFor(worldTarget);
         let origin = null;
         if(this.boundingBox){
             origin = this.boundingBox.getCenter()
@@ -353,7 +357,9 @@ export class Marker{
             //origin = new Vector3();
             //this.mesh.getWorldPosition(origin);
         }
-        origin.z =0;
+        origin.z = 0;
+        const worldOriginCoords = treadmill.worldPositionFor(origin);
+        const worldOrigin = new Vector3(worldOriginCoords.x, worldOriginCoords.y, worldOriginCoords.z);
         const movementSpeed = this.values.movementSpeed || 1;
         const maxDistance = movementSpeed * delta;
         const quaternion = new Quaternion();
@@ -382,15 +388,16 @@ export class Marker{
             }
         }
         //*/
+        console.log('--->', worldOrigin, worldTarget);
         if(
             target &&
              origin && 
-             localTarget && 
-             origin.distanceTo(target) < maxDistance
+             worldTarget && 
+             worldOrigin.distanceTo(worldTarget) < maxDistance
          ){
             //todo: compute remaining time
             this.moveTo(new Vector2(target.x, target.y), treadmill);
-            const remainder = (origin.distanceTo(target) / maxDistance) * delta;
+            const remainder = (worldOrigin.distanceTo(worldTarget) / maxDistance) * delta;
             return remainder;
         }else{
             raycaster.ray.at(maxDistance, result);
@@ -418,8 +425,8 @@ export class Marker{
         return this.moveInOrientation(direction.left.clone(), delta, target, treadmill);
     }
     
-    turn(delta=1, direction, localTarget, options, treadmill){
-        const target = treadmill.localPositionFor(localTarget);
+    turn(delta=1, direction, worldTarget, options, treadmill){
+        const target = treadmill.localPositionFor(worldTarget);
         const turnSpeed = this.values.turnSpeed || 0.00001;
         const maxRotation = turnSpeed * delta;
         const position = new Vector3();
@@ -435,13 +442,15 @@ export class Marker{
             this.mesh.position.y, 
             this.mesh.position.z
         );
+        const worldPosition = treadmill.localPositionFor(positionV);
+        
         
         position.copy(target);
         const speed = 2;
         if(target){
             //let targetAngle = positionV.angleTo(targetV);
             //let targetAngle = Math.atan2(targetV.y, targetV.x) - Math.atan2(positionV.y, positionV.x);
-            let targetAngle = Math.atan2(targetV.y - positionV.y, targetV.x - positionV.x);
+            let targetAngle = Math.atan2(worldTarget.y - worldPosition.y, worldTarget.x - worldPosition.x);
             if (targetAngle < 0) { targetAngle += 2 * Math.PI; }
             //const targetAngle = this.targetAngle || positionV.angleTo(this.target)*180/Math.PI;
             //if(!this.targetAngle) this.targetAngle = targetAngle

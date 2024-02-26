@@ -58,6 +58,9 @@ export class MarkerEngine{
             }
             const submesh = new Submesh(submeshData);
             const markers = this.createMarkers(submeshData.worldX, submeshData.worldY);
+            markers.forEach((marker)=>{
+                this.addMarker(marker);
+            })
             //console.log('>>>', submeshData, markers);
             this.addSubmesh(submesh);
             this.submeshes[submeshData.location] = submesh;
@@ -181,7 +184,6 @@ export class MarkerEngine{
                 const { markerTypes } = await import(this.options.markerTypesFile);
                 const types = await markerTypes();
                 this.markerTypes = types;
-                console.log('TYPES LOADED', this.markerTypes.map((type)=>type.constructor.name));
             }else{
                 if(this.options.markerTypes){
                     this.markerTypes = this.options.markerTypes
