@@ -30,103 +30,12 @@ import Logger from 'bitwise-logger';
 
 import { allTiles, neighbors, Tile, tileForPos } from './tiles.mjs';
 
-//const self = {};
 
-export const messageHandler = async (e)=>{
-    const data = JSON.parse(e.data);
-    if(data.type){
-        switch(data.type){
-            case 'world': //incoming world definition
-                Logger.log(data, Logger.INFO);
-                let voxelFilePromise;
-                if(data.world.voxelFile){
-                    voxelFilePromise = import(data.world.voxelFile);
-                    (async ()=>{
-                        const { voxels, markers } = await voxelFilePromise;
-                        const creationFn = generateMeshCreationFromVoxelFn(
-                            voxels
-                        );
-                        self.voxelMesh = creationFn('test-seed', 16);
-                        self.createMarkers = markers;
-                    })();
-                }
-                self.world = data.world;
-                self.physicalWorld = new World({
-                    gravity: new Vec3(0, 0, -9.81)
-                });
-                self.onlyReturnDirtyObjects = data.world.onlyReturnDirtyObjects;
-                if(data.markerTypes){
-                    
-                }
-                let submeshData = [];
-                let currentMarkers = [];
-                if(voxelFilePromise) await voxelFilePromise;
-                await allTiles(async (tile, location)=>{
-                    const submesh = new Submesh({
-                        x: tile.x,
-                        y: tile.y,
-                        tileX: tile.x,
-                        tileY: tile.y,
-                        voxelMesh: self.voxelMesh
-                    });
-                    const localMarkers = await self.createMarkers(tile.x, tile.y);
-                    localMarkers.forEach((marker)=>{
-                        marker.adoptedBySubmesh(submesh);
-                    });
-                    self.addSubmesh(submesh, location);
-                    const data = submesh.data();
-                    data.location = location
-                    submeshData.push(data);
-                    localMarkers.forEach((marker)=>{
-                        self.addMarker(marker);
-                    });
-                    currentMarkers = currentMarkers.concat(
-                        localMarkers.map((marker)=> marker.data())
-                    );
-                });
-                self.postMessage(JSON.stringify({
-                    type:'submesh-update', 
-                    submesh: submeshData
-                }));
-                self.postMessage(JSON.stringify({
-                    type:'create-markers', 
-                    markers: currentMarkers
-                }));
-                break;
-            case 'add-submesh': //incoming submesh definition
-                //self.addSubmesh(data.submesh);
-                break;
-            case 'start': //incoming start execution loop
-                console.log('START')
-                self.start();
-                break;
-            case 'stop': //incoming stop execution loop after next turn
-                self.stop();
-                break;
-            case 'add-marker':
-                const marker = new Marker(data.marker);
-                self.addMarker(marker);
-                break;
-            case 'move-marker':
-                break;
-            case 'focus':
-                const found = self.markers.find((marker)=> marker.id === data.id);
-                if(found){
-                    self.focusedMarker = found;
-                }else{
-                    console.log(`could not focus on marker ${data.id}`);
-                }
-                break;
-            case 'marker-action': 
-                const action = data.action;
-                const subject = self.markers.find((marker)=> marker.id == action.id );
-                subject.action(action.name, action.options, action.target);
-                Logger.log(`object for id: ${data.action.id}`, Logger.DEBUG & Logger.INFO, subject, action);
-                
-        }
-    }
-    //*/
-};
+try{
+    if(!globalThis.self) globalThis.self = {};
+}catch(ex){
+    
+}
 
 export const workerStateSetup = ()=>{
     self.markers = [];
@@ -189,7 +98,6 @@ export const workerStateSetup = ()=>{
             let lcv=null;
             for(lcv=0; lcv < self.markers.length; lcv++){
                 self.markers[lcv].act(delta, self);
-                //console.log('MESH ON ACT', self.markers[lcv].mesh);
             }
         }catch(ex){
             console.log("ERR", ex)
@@ -249,7 +157,7 @@ export const workerStateSetup = ()=>{
         const reusedSubmeshes = [];
         allTiles((tile, location)=>{
             if(!submeshes[location]){
-                loadingMeshes.push(new Promise((resolve, reject)=>{
+                loadingMeshes.push(new Promise(async (resolve, reject)=>{
                     try{
                         const offset = Tile.offset[location];
                         x = current.worldX + offset.x;
@@ -265,7 +173,10 @@ export const workerStateSetup = ()=>{
                         const data = submesh.data();
                         data.location = location;
                         submeshData.push(data);
-                        const localMarkers = self.createMarkers(x, y);
+                        const localMarkers = await self.createMarkers(x, y);
+                        localMarkers.forEach((marker)=>{
+                            marker.adoptedBySubmesh(submesh);
+                        });
                         resolve(submesh);
                     }catch(ex){
                         reject(ex);
@@ -385,11 +296,118 @@ export const workerStateSetup = ()=>{
         self.running = false;
         self.clock.stop();
     };
-}
+    
+} //*/
 try{
     workerStateSetup();
-    self.onmessage = messageHandler;
+    self.onmessage = async (e)=>{
+        const data = JSON.parse(e.data);
+        try{
+            if(data.type){
+                switch(data.type){
+                    //*
+                    case 'world': //incoming world definition
+                        if(data.world.debug){
+                            Logger.level = Logger.ERROR & Logger.DEBUG & Logger.INFO;
+                        }
+                        Logger.log(data, Logger.INFO);
+                        let voxelFilePromise;
+                        if(data.world.voxelFile){
+                            voxelFilePromise = import(data.world.voxelFile);
+                            (async ()=>{
+                                const { voxels, markers } = await voxelFilePromise;
+                                const creationFn = generateMeshCreationFromVoxelFn(
+                                    voxels
+                                );
+                                self.voxelMesh = creationFn('test-seed', 16);
+                                self.createMarkers = markers;
+                            })();
+                        }
+                        self.world = data.world;
+                        self.physicalWorld = new World({
+                            gravity: new Vec3(0, 0, -9.81)
+                        });
+                        self.onlyReturnDirtyObjects = data.world.onlyReturnDirtyObjects;
+                        if(data.markerTypes){
+                            
+                        }
+                        let submeshData = [];
+                        let currentMarkers = [];
+                        if(voxelFilePromise) await voxelFilePromise;
+                        //*
+                        if(voxelFilePromise) await allTiles(async (tile, location)=>{
+                            const submesh = new Submesh({
+                                x: tile.x,
+                                y: tile.y,
+                                tileX: tile.x,
+                                tileY: tile.y,
+                                voxelMesh: self.voxelMesh
+                            });
+                            const localMarkers = await self.createMarkers(tile.x, tile.y);
+                            localMarkers.forEach((marker)=>{
+                                marker.adoptedBySubmesh(submesh);
+                            });
+                            self.addSubmesh(submesh, location);
+                            const data = submesh.data();
+                            data.location = location
+                            submeshData.push(data);
+                            localMarkers.forEach((marker)=>{
+                                self.addMarker(marker);
+                            });
+                            currentMarkers = currentMarkers.concat(
+                                localMarkers.map((marker)=> marker.data())
+                            );
+                        }); //*/
+                        
+                        self.postMessage(JSON.stringify({
+                            type:'submesh-update', 
+                            submesh: submeshData
+                        }));
+                        self.postMessage(JSON.stringify({
+                            type:'create-markers', 
+                            markers: currentMarkers
+                        }));
+                        break;
+                    //*/
+                    case 'add-submesh': //incoming submesh definition
+                        //self.addSubmesh(data.submesh);
+                        break;
+                    case 'start': //incoming start execution loop
+                        Logger.log('START', Logger.INFO & Logger.DEBUG)
+                        self.start();
+                        break;
+                    case 'stop': //incoming stop execution loop after next turn
+                        self.stop();
+                        break;
+                    case 'add-marker':
+                        const marker = new Marker(data.marker);
+                        self.addMarker(marker);
+                        break;
+                    case 'move-marker':
+                        break;
+                    case 'focus':
+                        const found = self.markers.find((marker)=> marker.id === data.id);
+                        if(found){
+                            self.focusedMarker = found;
+                        }else{
+                            Logger.log(`could not focus on marker ${data.id}`, Logger.INFO & Logger.DEBUG);
+                        }
+                        break;
+                    case 'marker-action': 
+                        const action = data.action;
+                        const subject = self.markers.find((marker)=> marker.id == action.id );
+                        subject.action(action.name, action.options, action.target);
+                        Logger.log(`object for id: ${data.action.id}`, Logger.DEBUG & Logger.INFO, subject, action);
+                        
+                }
+            }else{
+                Logger.log(`unknown message: ${data.type}`, Logger.ERROR);
+            }
+        }catch(ex){
+            Logger.log('COMM error', Logger.ERROR);
+        }
+    };
 }catch(ex){
-    console.log('worker startup error', ex)
+    Logger.log('worker startup error', Logger.ERROR, ex);
 }
-Logger.log('WORKER RUNNING')
+Logger.log('WORKER RUNNING', Logger.INFO & Logger.DEBUG);

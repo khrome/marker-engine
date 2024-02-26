@@ -12,20 +12,24 @@ import { Submesh } from './submesh.mjs';
 import { allTiles, neighbors, weldTreadmill, tileForPos } from './tiles.mjs';
 import { tools, enable } from './development.mjs';
 import { generateMeshCreationFromVoxelFn } from './voxel-mesh.mjs';
+import Logger from 'bitwise-logger';
 
 
 import {
     Clock
-} from "../node_modules/three/build/three.module.js";
+} from "three";
 
 /**
  * A JSON object
  * @typedef { object } JSON
  */
-import { Emitter } from '../node_modules/extended-emitter/./extended-emitter.mjs';
+import { Emitter } from 'extended-emitter';
  
 export class MarkerEngine{
     constructor(options={}){
+        if(options.debug){
+            Logger.level = Logger.ERROR & Logger.INFO;
+        }
         this.options = options;
         this.emitter = new Emitter();
         this.tileOffsets = {
@@ -60,8 +64,7 @@ export class MarkerEngine{
             const markers = this.createMarkers(submeshData.worldX, submeshData.worldY);
             markers.forEach((marker)=>{
                 this.addMarker(marker);
-            })
-            //console.log('>>>', submeshData, markers);
+            });
             this.addSubmesh(submesh);
             this.submeshes[submeshData.location] = submesh;
             if(Object.keys(this.submeshes).length === 9){ //initial submeshes loaded
@@ -175,7 +178,6 @@ export class MarkerEngine{
             type: 'add-submesh',
             submesh: data
         }));
-        //console.log('added submesh')
     }
     
     async initialize(preloadHandler){
@@ -228,7 +230,6 @@ export class MarkerEngine{
                                 instance = new type(data);
                             }
                         });
-                        console.log('new marker', instance)
                         return instance;
                     });
                     this.emit('create-markers', markerObjects);

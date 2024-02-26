@@ -169,7 +169,6 @@ export class Marker{
                 }
             };
             this.engine.worker.postMessage(JSON.stringify(action));
-            console.log('remote action', action)
         }else{
             //we're inside the engine and just queue an action directly
             this.actionQueue.push({
@@ -388,7 +387,7 @@ export class Marker{
             }
         }
         //*/
-        console.log('--->', worldOrigin, worldTarget);
+        //console.log('--->', worldOrigin, worldTarget);
         if(
             target &&
              origin && 
