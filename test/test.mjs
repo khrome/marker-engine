@@ -73,9 +73,13 @@ describe('module', ()=>{
             engine.stop();
             engine.cleanup();
         });
-        /*
-        it('loads', async ()=>{
-            const engine = new MarkerEngine();
+        it('marker refreshes a known state with submeshes', async ()=>{
+            const engine = new MarkerEngine({
+                //onlyReturnDirtyObjects: false
+                //debug:true
+                voxelFile: '../test/demo/layered-perlin-mesh.mjs',
+                markerTypesFile: '../src/default-markers.mjs'
+            });
             await engine.initialize();
             const marker = new Marker({
                 id : 'foo',
@@ -87,21 +91,21 @@ describe('module', ()=>{
             });
             engine.addMarker(marker);
             engine.start();
-            marker.action('moveTo', {}, {x: 10, y: 10, z: 0});
             should.exist({});
             let stateCount = 0;
             const states = [];
+            marker.action('moveTo', {}, { x: 10, y: 10, z:0 })
             await new Promise((resolve)=>{
                 engine.on('state', (data)=>{
-                    console.log('update', data.markers);
+                    //console.log('update', data.markers[0]);
                     states.push(data);
                     stateCount++;
-                    if(stateCount > 10000) resolve();
+                    if(stateCount > 1) resolve();
                 });
             });
             engine.stop();
             engine.cleanup();
-        }); //*/
+        });
     });
 });
 

@@ -404,6 +404,7 @@ try{
                 Logger.log(`unknown message: ${data.type}`, Logger.ERROR);
             }
         }catch(ex){
+            console.log(ex);
             Logger.log('COMM error', Logger.ERROR);
         }
     };
