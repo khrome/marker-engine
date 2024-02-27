@@ -123,10 +123,12 @@ export class MarkerEngine{
     }
     
     worldPositionFor(localPosition){
-        return {
-            x: localPosition.x + this.submeshes.current.worldX*16,
-            y: localPosition.y + this.submeshes.current.worldY*16,
-            z: 0
+        if(this.submeshes.current){
+            return {
+                x: localPosition.x + this.submeshes.current.worldX*16,
+                y: localPosition.y + this.submeshes.current.worldY*16,
+                z: 0
+            }
         }
     }
     localPositionFor(worldPosition){
@@ -203,7 +205,7 @@ export class MarkerEngine{
                 if(typeof e.data !== 'string' ) return;
                 const data = JSON.parse(e.data);
                 if(data.type === 'state'){
-                    this.emit('state', data.state)
+                    this.emit('state', data.state);
                 }
                 if(data.type === 'submesh-update'){
                     data.submesh.forEach((submeshData)=>{

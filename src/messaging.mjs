@@ -71,9 +71,7 @@ export const workerStateSetup = ()=>{
         //self.physicalWorld.addBody(physicsBody);
     };
     self.worldPositionFor = (localPosition)=>{
-        if(!self.submeshes.current){
-            return localPosition;
-        }
+        if(!self.submeshes.current) return localPosition;
         return {
             x: localPosition.x + self.submeshes.current.worldX*16,
             y: localPosition.y + self.submeshes.current.worldY*16,
@@ -81,9 +79,7 @@ export const workerStateSetup = ()=>{
         }
     }
     self.localPositionFor = (worldPosition)=>{
-        if(!self.submeshes.current){
-            return worldPosition;
-        }
+        if(!self.submeshes.current) return worldPosition;
         return {
             x: worldPosition.x - self.submeshes.current.worldX*16,
             y: worldPosition.y - self.submeshes.current.worldY*16,
@@ -240,7 +236,7 @@ export const workerStateSetup = ()=>{
                 currentState = markerStates();
                 if(currentState.markers.length){
                     self.postMessage(JSON.stringify({
-                        type:'state', 
+                        type: 'state', 
                         state: currentState
                     }));
                 }
@@ -335,29 +331,33 @@ try{
                         let currentMarkers = [];
                         if(voxelFilePromise) await voxelFilePromise;
                         //*
-                        if(voxelFilePromise) await allTiles(async (tile, location)=>{
-                            const submesh = new Submesh({
-                                x: tile.x,
-                                y: tile.y,
-                                tileX: tile.x,
-                                tileY: tile.y,
-                                voxelMesh: self.voxelMesh
-                            });
-                            const localMarkers = await self.createMarkers(tile.x, tile.y);
-                            localMarkers.forEach((marker)=>{
-                                marker.adoptedBySubmesh(submesh);
-                            });
-                            self.addSubmesh(submesh, location);
-                            const data = submesh.data();
-                            data.location = location
-                            submeshData.push(data);
-                            localMarkers.forEach((marker)=>{
-                                self.addMarker(marker);
-                            });
-                            currentMarkers = currentMarkers.concat(
-                                localMarkers.map((marker)=> marker.data())
-                            );
-                        }); //*/
+                        if(voxelFilePromise){
+                            await allTiles(async (tile, location)=>{
+                                const worldX = tile.x + (data.world.x || 0);
+                                const worldY = tile.y + (data.world.y || 0);
+                                const submesh = new Submesh({
+                                    x: tile.x,
+                                    y: tile.y,
+                                    tileX: worldX,
+                                    tileY: worldY,
+                                    voxelMesh: self.voxelMesh
+                                });
+                                const localMarkers = await self.createMarkers(worldX, worldY);
+                                localMarkers.forEach((marker)=>{
+                                    marker.adoptedBySubmesh(submesh);
+                                });
+                                self.addSubmesh(submesh, location);
+                                const thisData = submesh.data();
+                                thisData.location = location
+                                submeshData.push(thisData);
+                                localMarkers.forEach((marker)=>{
+                                    self.addMarker(marker);
+                                });
+                                currentMarkers = currentMarkers.concat(
+                                    localMarkers.map((marker)=> marker.data())
+                                ); //*/
+                            }); //*/
+                        }
                         
                         self.postMessage(JSON.stringify({
                             type:'submesh-update', 
@@ -409,6 +409,6 @@ try{
         }
     };
 }catch(ex){
-    Logger.log('worker startup error', Logger.ERROR, ex);
+    Logger.log('worker startup error', Logger.ERROR, '*', ex);
 }
-Logger.log('WORKER RUNNING', Logger.INFO & Logger.DEBUG);
+Logger.log('WORKER RUNNING', Logger.INFO | Logger.DEBUG);

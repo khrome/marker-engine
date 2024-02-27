@@ -85,14 +85,21 @@ export const weldTreadmill = (submeshIndex)=>{
 };
 
 export const allTiles = async (handler)=>{
-    const allResolutions = [];
-    Object.keys(direction).forEach((dir)=>{
-        allResolutions.push(new Promise(async (resolve)=>{
-            await handler(direction[dir], dir);
-            resolve();
-        }));
-    });
-    await Promise.all(allResolutions);
+    try{
+        const allResolutions = [];
+        Object.keys(direction).forEach((dir)=>{
+            allResolutions.push(new Promise(async (resolve, reject)=>{
+                try{
+                    await handler(direction[dir], dir);
+                    resolve();
+                }catch(ex2){
+                    //console.log('@@###', ex2)
+                    reject(ex2)
+                }
+            }));
+        });
+        await Promise.all(allResolutions);
+    }catch(ex){}
 };
 
 const direction = {

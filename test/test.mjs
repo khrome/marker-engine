@@ -43,10 +43,7 @@ describe('module', ()=>{
             worker.terminate();
         });
         it('marker refreshes a known state', async ()=>{
-            const engine = new MarkerEngine({
-                //onlyReturnDirtyObjects: false
-                //debug:true
-            });
+            const engine = new MarkerEngine({});
             await engine.initialize();
             const marker = new Marker({
                 id : 'foo',
@@ -75,8 +72,6 @@ describe('module', ()=>{
         });
         it('marker refreshes a known state with submeshes', async ()=>{
             const engine = new MarkerEngine({
-                //onlyReturnDirtyObjects: false
-                //debug:true
                 voxelFile: '../test/demo/layered-perlin-mesh.mjs',
                 markerTypesFile: '../src/default-markers.mjs'
             });
@@ -101,6 +96,58 @@ describe('module', ()=>{
                     states.push(data);
                     stateCount++;
                     if(stateCount > 1) resolve();
+                });
+            });
+            engine.stop();
+            engine.cleanup();
+        });
+        
+        it('marker refreshes a known state with submeshes @ 5, 5 ', async ()=>{
+            const engine = new MarkerEngine({
+                voxelFile: '../test/demo/layered-perlin-mesh.mjs',
+                markerTypesFile: '../src/default-markers.mjs',
+                x: 5,
+                y: 5
+            });
+            await engine.initialize();
+            const marker = new Marker({
+                id : 'foo',
+                position: {
+                    x: 10,
+                    y: 10,
+                    z: 0
+                }
+            });
+            engine.addMarker(marker);
+            engine.start();
+            should.exist({});
+            let stateCount = 0;
+            const states = [];
+            let startCheckHasRun = false;
+            const checkStart = (handler)=>{
+                if(!startCheckHasRun) handler;
+                startCheckHasRun = true;
+            }
+            await new Promise((resolve)=>{
+                engine.on('load', ()=>{
+                    engine.on('state', (data)=>{
+                        const worldPosition = engine.worldPositionFor(data.markers[0].position);
+                        checkStart(()=>{
+                            worldPosition.x.should.equal(90);
+                            worldPosition.y.should.equal(90);
+                        });
+                        console.log(
+                            'WP', 
+                            data.markers[0].position,
+                            worldPosition, 
+                            engine.submeshes.current.worldX, 
+                            engine.submeshes.current.worldY
+                        );
+                        states.push(data);
+                        stateCount++;
+                        if(stateCount > 10) resolve();
+                    });
+                    marker.action('moveTo', {}, { x: 100, y: 100, z:0 })
                 });
             });
             engine.stop();

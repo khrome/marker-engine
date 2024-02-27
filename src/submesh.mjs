@@ -175,6 +175,7 @@ const copyRowCoords = (originSubmesh, destinationSubmesh, originRow, destination
 //*
 export class Submesh{
     constructor(options={}){
+        if(!options.tileX) console.log(new Error().stack);
         this.x = options.x || 0;
         this.y = options.y || 0;
         this.worldX = options.tileX || options.x || 0;
@@ -245,8 +246,8 @@ export class Submesh{
             voxels: this.voxelData,
             x: this.x,
             y: this.y,
-            worldX: this.x,
-            worldY: this.y,
+            tileX: this.worldX || this.x,
+            tileY: this.worldY || this.y,
             position:{
                 x: this.mesh.position.x,
                 y: this.mesh.position.y,
