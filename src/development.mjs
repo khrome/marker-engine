@@ -306,7 +306,7 @@ const setHUDPositions = (statsArray, infoArray, side='right', orientation='top')
         infoPane.dom.style[orientation] = `${y}px`;
         infoPane.dom.style[side] = `${x}px`;
         y += infoPane.dom.style.height;
-    })
+    });
 };
 
 const createAxisStats = (camera)=>{

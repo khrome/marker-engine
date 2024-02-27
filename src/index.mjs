@@ -55,6 +55,7 @@ export class MarkerEngine{
                 this.voxelMesh = creationFn('test-seed', 16);
             })();
         }
+        let initialLoad = false;
         this.on('submesh-data', async (submeshData)=>{
             if(voxelFilePromise) await voxelFilePromise;
             if(this.voxelMesh){
@@ -73,7 +74,10 @@ export class MarkerEngine{
                     this.emit('submesh', this.submeshes[key]);
                 });
                 this.emit('load', {});
-                
+                if(!initialLoad){
+                    initialLoad = true;
+                    this.emit('initial-load', {});
+                }
                 //now it's time to weld the submeshes edge-to-edge
             }
         });

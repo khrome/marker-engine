@@ -33,15 +33,10 @@ export class Visualizer{
         context.strokeStyle = '#000000'
         context.fillStyle = marker.color || marker.values.color || '#FF0000';
         context.beginPath();
-        const localPoint = treadmill.localPositionFor(marker.target|| target)
         const pos = {
             x: (marker.mesh.position.x+16)*10, 
             y: ((32 - marker.mesh.position.y)*10), 
         };
-        const targ = {
-            x: (localPoint.x+16)*10, 
-            y: (32 - localPoint.y)*10
-        }
         //circle
         context.arc(
             pos.x, 
@@ -75,6 +70,11 @@ export class Visualizer{
             pos.y
         );
         if(marker.target){
+            const localPoint = treadmill.localPositionFor(marker.target|| target)
+            const targ = {
+                x: (localPoint.x+16)*10, 
+                y: (32 - localPoint.y)*10
+            };
             context.beginPath();
             // angle
             context.strokeStyle = '#999999'
@@ -123,7 +123,7 @@ export class Visualizer{
         context.lineTo(48*10, 32*10);
         context.stroke();
         this.markers.forEach((existingMarker)=>{
-            this.drawPoint(context, existingMarker, existingMarker.target, treadmill);
+                this.drawPoint(context, existingMarker, existingMarker.target, treadmill);
         });
     }
     
