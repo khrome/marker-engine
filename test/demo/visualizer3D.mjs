@@ -17,7 +17,7 @@ import { enable, tools } from '../../src/development.mjs';
 export class Visualizer3D{
     constructor(options={}){
         const scene = new Scene();
-        
+        this.engine = options.engine
         //const horizonPlaneGeometry = new PlaneGeometry( 1024, 1024 );
         //horizonPlaneGeometry.translate( 8, 8, -0.001 );
         /*const horizonPlaneGeometry = new PlaneGeometry( 48, 48 );
@@ -35,9 +35,9 @@ export class Visualizer3D{
         scene.add(horizonPlane);
         //*/
         this.markers = [];
-        
+        console.log('^^', options.width, options.height)
         const renderer = createRenderer();
-        renderer.setSize(480, 480, false);
+        renderer.setSize((options.width), (options.height), false);
         this.renderer = renderer;
         //container.append(renderer.domElement);
         const { ambient, directional } = createLights({ 
@@ -47,6 +47,7 @@ export class Visualizer3D{
                 position : new Vector3(8, 8, 0)
             }
         });
+        this.directional = directional;
         scene.add(ambient);
         scene.add(directional);
         
@@ -61,8 +62,6 @@ export class Visualizer3D{
         
         this.scene = scene;
         this.camera = camera;
-        
-        enable({ scene, renderer, light: directional , camera });
     }
     
     addMarker(incomingMarker){
@@ -118,6 +117,8 @@ export class Visualizer3D{
         }, 100);
         engine.on('remove-submesh', (submesh)=>{
             this.scene.remove(submesh.mesh);
+            submesh.mesh.material.color.set(0x0000ff);
+            console.log('RMSBMSH', submesh);
         });
         engine.on('remove-markers', (markers)=>{
             markers.forEach((marker)=>{
@@ -127,6 +128,15 @@ export class Visualizer3D{
     }
     
     attach(el){
+        this.el = el;
+        enable({ 
+            scene:this.scene, 
+            renderer: this.renderer, 
+            light: this.directional, 
+            camera: this.camera, 
+            container: this.el,
+            treadmill: this.engine
+        });
         el.appendChild(this.renderer.domElement);
     }
 }

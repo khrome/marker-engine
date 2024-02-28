@@ -42,8 +42,14 @@ let textLabels = {};
 //export { Logger };
 
 let toolsInstance = null;
-export const enable = ({ scene, clock, renderer, light, camera })=>{
-    toolsInstance = new DevelopmentTools({ scene, clock, renderer, light, camera });
+export const enable = ({ scene, clock, renderer, light, camera, container, treadmill })=>{
+    toolsInstance = new DevelopmentTools({ scene, clock, renderer, light, camera, treadmill });
+    if(container){
+        toolsInstance.meshInfo = toolsInstance.show('mesh', container);
+        //toolsInstance.show('face', container);
+        activateTriangleSelection(container, renderer, scene, toolsInstance, camera, treadmill);
+    }
+    makeInfoPane('title')
 };
 
 export const tools = (handler)=>{
@@ -278,7 +284,6 @@ export class DevelopmentTools{
         return result;
     }
     
-    
 }
 
 const setHUDPositions = (statsArray, infoArray, side='right', orientation='top')=>{
@@ -445,7 +450,16 @@ const selectTriangle = (faces, intersection, scene)=>{
     scene.add( line );
 }
 
-const activateTriangleSelection = (container, renderer, scene, loop, camera)=>{
+const submeshForMesh = (submeshes, mesh)=>{
+    return submeshes.reduce((agg, submesh)=>{
+        if(submesh.mesh === mesh){
+            return submesh;
+        }
+        return agg;
+    }, null)
+};
+
+const activateTriangleSelection = (container, renderer, scene, devtools, camera, treadmill)=>{
     container.addEventListener('mousemove', (event)=>{
         var raycaster = new Raycaster(); // create once
         var mouse = new Vector2(); // create once
@@ -455,17 +469,36 @@ const activateTriangleSelection = (container, renderer, scene, loop, camera)=>{
 
         raycaster.setFromCamera( mouse, camera );
         var intersects = null;
+        const submeshes = treadmill.getSubmeshes();
+        const meshes = treadmill.getSubmeshMeshes();
         try{ //can't do this mid-load
-            intersects = raycaster.intersectObjects( scene.treadmill.activeSubmeshMeshes(), true );
-        }catch(ex){}
+            intersects = raycaster.intersectObjects( meshes, true );
+        }catch(ex){
+            console.log(ex);
+        }
         if(intersects && intersects[0]){
             const geometry = intersects[0]?.object?.geometry;
             if(geometry){
                 const offset = intersects[0].faceIndex * geometry.attributes.position.itemSize * 3;
                 const face = Array.prototype.slice.call(geometry.attributes.position.array, offset, offset+3*3);
-                const submeshName = scene.treadmill.positionOfMesh(intersects[0].object);
-                const submesh = scene.treadmill.submesh(submeshName);
-                loop.devtools.setDevOutput('face', { 
+                const submesh = submeshForMesh(submeshes, intersects[0]?.object);
+                //const submesh = treadmill.submeshes[submeshName];
+                devtools.value({ 
+                    face, 
+                    submesh: '',
+                    submeshX: submesh.worldX.toString(),
+                    submeshY: submesh.worldY.toString(),
+                    submeshTreadmillX: Math.floor(submesh.mesh.position.x/16).toString(),
+                    submeshTreadmillY: Math.floor(submesh.mesh.position.y/16).toString()
+                });
+                selectTriangle(face, intersects[0], scene);
+                if(devtools.meshInfo) devtools.meshInfo.refresh();
+                /*
+                const offset = intersects[0].faceIndex * geometry.attributes.position.itemSize * 3;
+                const face = Array.prototype.slice.call(geometry.attributes.position.array, offset, offset+3*3);
+                const submeshName = treadmill.positionOfMesh(intersects[0].object);
+                const submesh = treadmill.submeshes[submeshName];
+                devtools.value('face', { 
                     face, 
                     submesh: submeshName,
                     submeshX: submesh.submeshX,
@@ -474,7 +507,8 @@ const activateTriangleSelection = (container, renderer, scene, loop, camera)=>{
                     submeshTreadmillY: Math.floor(submesh.mesh.position.y/16)
                 });
                 selectTriangle(face, intersects[0], scene);
+                //*/
             }
-        }else loop.devtools.setDevOutput('face', { face: []});
+        }else devtools.value('face', { face: []});
     });
 } //*/

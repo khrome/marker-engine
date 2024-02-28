@@ -68,17 +68,17 @@ export class MarkerEngine{
             });
             this.addSubmesh(submesh);
             this.submeshes[submeshData.location] = submesh;
+            this.emit('submesh', submesh);
             if(Object.keys(this.submeshes).length === 9){ //initial submeshes loaded
                 weldTreadmill(this.submeshes);
-                Object.keys(this.submeshes).forEach((key)=>{
+                /*Object.keys(this.submeshes).forEach((key)=>{
                     this.emit('submesh', this.submeshes[key]);
-                });
+                });*/
                 this.emit('load', {});
                 if(!initialLoad){
                     initialLoad = true;
                     this.emit('initial-load', {});
                 }
-                //now it's time to weld the submeshes edge-to-edge
             }
         });
         this.on('treadmill-transition', ({x, y})=>{
@@ -112,6 +112,15 @@ export class MarkerEngine{
                 marker.mesh.position.y += y*16;
             });
         });
+    }
+    
+    getSubmeshes(){
+        return Object.keys(this.submeshes).map((key)=> this.submeshes[key]);
+    }
+    
+    getSubmeshMeshes(){
+        const submeshes = this.getSubmeshes();
+        return submeshes.map((submesh)=> submesh.mesh);
     }
     
     getSubmeshAt = (x, y)=>{
