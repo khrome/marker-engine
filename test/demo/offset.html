@@ -448,12 +448,12 @@
             #viz2{
                 position:absolute;
                 top:0px;
-                right:0px;
+                left:0px;
             }
-            #viz, #viz canvas, #viz2 canvas, #viz2{
+            /*#viz2 canvas, #viz2{
                 height: 100vh;
                 width: 100vw;
-            }
+            }*/
             iframe{
                 margin: 0px;
                 border: 0px;
@@ -477,6 +477,7 @@
                 voxelFile: '/test/demo/layered-perlin-mesh.mjs',
                 markerTypesFile: '/src/default-markers.mjs',
                 container: '#viz2',
+                debug:true,
                 x: 5,
                 y: 5
             });

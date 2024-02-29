@@ -10,7 +10,7 @@ import { Worker } from '@environment-safe/esm-worker';
 import { Marker, Projectile, PhysicsProjectile, Scenery, Monster } from './marker.mjs';
 import { Submesh } from './submesh.mjs';
 import { allTiles, neighbors, weldTreadmill, tileForPos } from './tiles.mjs';
-import { tools, enable } from './development.mjs';
+import { tools, enable, createWireFrameFromGeometry } from './development.mjs';
 import { generateMeshCreationFromVoxelFn } from './voxel-mesh.mjs';
 import Logger from 'bitwise-logger';
 
@@ -81,7 +81,9 @@ export class MarkerEngine{
                 }
             }
         });
-        this.on('treadmill-transition', ({x, y})=>{
+        this.physicsDebugMeshes = [];
+        this.on('treadmill-transition', (data)=>{
+            const {x, y} = data.transition;
             const submeshes = {};
             let newPosition = null;
             let neighborhood = null;
@@ -106,6 +108,17 @@ export class MarkerEngine{
                     this.emit('remove-submesh', this.submeshes[key]);
                 }
             });
+            //*
+            if(options.debug && data.surfaces && data.positions){
+                this.physicsDebugMeshes.forEach((mesh)=>{
+                    mesh.remove();
+                })
+                const meshes = data.surfaces.map((coords, index)=>{
+                    return createWireFrameFromGeometry(coords, data.positions[index])
+                });
+                this.emit('physics-mesh', meshes);
+                this.physicsDebugMeshes = meshes;
+            } //*/
             this.submeshes = submeshes;
             this.markers.forEach((marker)=>{
                 marker.mesh.position.x += x*16;
@@ -226,7 +239,8 @@ export class MarkerEngine{
                     });
                 }
                 if(data.type === 'treadmill-transition'){
-                    this.emit('treadmill-transition', data.transition);
+                    console.log('data', data)
+                    this.emit('treadmill-transition', data);
                 }
                 if(data.type === 'remove-markers'){
                     const markerObjects = data.markers.map((id)=>{

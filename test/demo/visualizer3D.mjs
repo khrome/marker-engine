@@ -37,7 +37,7 @@ export class Visualizer3D{
         this.markers = [];
         console.log('^^', options.width, options.height)
         const renderer = createRenderer();
-        renderer.setSize((options.width), (options.height), false);
+        renderer.setSize(options.width, options.height, false);
         this.renderer = renderer;
         //container.append(renderer.domElement);
         const { ambient, directional } = createLights({ 
@@ -55,7 +55,7 @@ export class Visualizer3D{
         const { camera, controls } = createCamera({
             type: 'orbital',
             dom: renderer.domElement,
-            aspectRatio: (window.innerWidth / window.innerHeight)
+            aspectRatio: (options.width / options.height) //(window.innerWidth / window.innerHeight)
         });
         controls.update();
         this.controls = controls;
@@ -123,6 +123,11 @@ export class Visualizer3D{
         engine.on('remove-markers', (markers)=>{
             markers.forEach((marker)=>{
                 this.scene.remove(marker.mesh);
+            })
+        });
+        engine.on('physics-mesh', (meshes)=>{
+            meshes.forEach((mesh)=>{
+                this.scene.add(mesh);
             })
         });
     }

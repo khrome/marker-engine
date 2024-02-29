@@ -86,6 +86,13 @@ export const workerStateSetup = ()=>{
             z: 0
         }
     }
+    self.getSubmeshes = (worldPosition)=>{
+        return Object.keys(self.submeshes).map((key)=> self.submeshes[key]);
+    }
+    self.getSubmeshMeshes = (localPosition)=>{
+        const submeshes = self.getSubmeshes();
+        return submeshes.map((submesh)=> submesh.mesh);
+    }
     const evaluateTurn = (delta)=>{
         // physics tick
         self.physicalWorld.step(delta);
@@ -253,11 +260,16 @@ export const workerStateSetup = ()=>{
                         if(self.focusedMarker.mesh.position.x > 16) transition.x = -1;
                         if(self.focusedMarker.mesh.position.y > 16) transition.y = -1;
                         
-                        transitionTreadmill(transition);
-                        self.postMessage(JSON.stringify({
+                        const message = {
                             type:'treadmill-transition', 
                             transition
-                        }));
+                        };
+                        transitionTreadmill(transition);
+                        if(self.world.debug){
+                            message.surfaces = self.getSubmeshMeshes().map((mesh)=> mesh.coords);
+                            message.positions = self.getSubmeshMeshes().map((mesh)=> mesh.position);
+                        }
+                        self.postMessage(JSON.stringify(message));
                     }
                 }
                 removedMarkers = [];
@@ -303,6 +315,8 @@ try{
                 switch(data.type){
                     //*
                     case 'world': //incoming world definition
+                        console.log('===>', data.world)
+                        
                         if(data.world.debug){
                             Logger.level = Logger.ERROR & Logger.DEBUG & Logger.INFO;
                         }

@@ -7,6 +7,7 @@ import {
     Raycaster, 
     Vector2, 
     Vector3, 
+    Float32BufferAttribute,
     LineBasicMaterial, 
     MeshBasicMaterial,
     SphereGeometry,
@@ -459,6 +460,21 @@ const submeshForMesh = (submeshes, mesh)=>{
     }, null)
 };
 
+export const createWireFrameFromGeometry = (coords, position)=>{
+    const material = new MeshBasicMaterial({
+        color: 0xffffff,
+        wireframe: true
+    })
+    const geometry = new BufferGeometry();
+    geometry.setAttribute( 'position', new Float32BufferAttribute( coords, 3 ) );
+    geometry.computeVertexNormals();
+    const mesh = new Mesh(geometry, material);
+    mesh.position.x = position.x;
+    mesh.position.y = position.y;
+    mesh.position.z = position.z + 0.01;
+    return mesh;
+}
+
 const activateTriangleSelection = (container, renderer, scene, devtools, camera, treadmill)=>{
     container.addEventListener('mousemove', (event)=>{
         var raycaster = new Raycaster(); // create once
@@ -482,10 +498,9 @@ const activateTriangleSelection = (container, renderer, scene, devtools, camera,
                 const offset = intersects[0].faceIndex * geometry.attributes.position.itemSize * 3;
                 const face = Array.prototype.slice.call(geometry.attributes.position.array, offset, offset+3*3);
                 const submesh = submeshForMesh(submeshes, intersects[0]?.object);
-                //const submesh = treadmill.submeshes[submeshName];
                 devtools.value({ 
                     face, 
-                    submesh: '',
+                    submesh: submesh.location,
                     submeshX: submesh.worldX.toString(),
                     submeshY: submesh.worldY.toString(),
                     submeshTreadmillX: Math.floor(submesh.mesh.position.x/16).toString(),
@@ -493,21 +508,6 @@ const activateTriangleSelection = (container, renderer, scene, devtools, camera,
                 });
                 selectTriangle(face, intersects[0], scene);
                 if(devtools.meshInfo) devtools.meshInfo.refresh();
-                /*
-                const offset = intersects[0].faceIndex * geometry.attributes.position.itemSize * 3;
-                const face = Array.prototype.slice.call(geometry.attributes.position.array, offset, offset+3*3);
-                const submeshName = treadmill.positionOfMesh(intersects[0].object);
-                const submesh = treadmill.submeshes[submeshName];
-                devtools.value('face', { 
-                    face, 
-                    submesh: submeshName,
-                    submeshX: submesh.submeshX,
-                    submeshY: submesh.submeshY,
-                    submeshTreadmillX: Math.floor(submesh.mesh.position.x/16),
-                    submeshTreadmillY: Math.floor(submesh.mesh.position.y/16)
-                });
-                selectTriangle(face, intersects[0], scene);
-                //*/
             }
         }else devtools.value('face', { face: []});
     });

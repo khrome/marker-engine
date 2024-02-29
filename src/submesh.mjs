@@ -234,6 +234,7 @@ export class Submesh{
             material: groundMaterial
             //mass:5
         });
+        body.coords = coords;
         if(!this.mesh) this.mesh = body;
         return body;
     }

@@ -6,6 +6,7 @@ import { OrbitControls } from '../../node_modules/three/examples/jsm/controls/Or
 export const create = (options={})=>{
     let ratio = options.aspectRatio;
     if(Number.isNaN(ratio)) ratio = 16/9;
+    console.log('--->', ratio)
     if(options.type === 'perspective' || options.type === 'orbital' || !options.type){
         const camera = new PerspectiveCamera(
             45, 
