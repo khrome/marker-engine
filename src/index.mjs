@@ -87,7 +87,10 @@ export class MarkerEngine{
             const {x, y} = data.transition;
             //delete
             if(data.removals){
-                this.emit('remove-submeshes', data.removals);
+                this.emit('remove-submeshes', {
+                    removeTargets:data.removals,
+                    submeshes: this.submeshes,
+                });
             }
             //shift
             Object.keys(this.submeshes).forEach((key)=>{

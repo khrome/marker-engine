@@ -115,10 +115,23 @@ export class Visualizer3D{
             //if(window.tools) window.tools.tickStop();
             if(turnHandler) turnHandler();
         }, 100);
-        engine.on('remove-submeshes', (submeshes)=>{
+        engine.on('remove-submeshes', ({submeshes,removeTargets})=>{
             //maybe optimize this by holding meshes?
-            console.log('REMOVE')
-            this.scene.traverse(function(child) {
+            Object.keys(submeshes).forEach((key)=>{
+                removeTargets.forEach((removeTarget)=>{
+                    if(
+                        submeshes[key].worldX === removeTarget.worldX &&
+                        submeshes[key].worldY === removeTarget.worldY
+                    ){
+                        console.log('REMOVING', submeshes[key].worldX, submeshes[key].worldY);
+                        this.scene.remove(submeshes[key].mesh)
+                        submeshes[key].mesh.geometry.dispose();
+                        submeshes[key].mesh.material.dispose();
+                    }
+                });
+            })
+            console.log('REMOVE', submeshes)
+            /*this.scene.traverse(function(child) {
                 if(child.name === "ground_mesh") {
                     console.log('ground_mesh', child.position);
                     if(
@@ -127,10 +140,12 @@ export class Visualizer3D{
                         child.position.y < -16 ||
                         child.position.y > 16
                     ){
-                        scene.remove(child);
+                        console.log('ground_mesh D', child);
+                        child.remove();
+                        //this.scene.remove(child);
                     }
                 }
-            });
+            });*/
             //this.scene.remove(submesh.mesh);
             //submesh.mesh.material.color.set(0x0000ff);
             console.log('RMSBMSH');
