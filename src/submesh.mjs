@@ -220,8 +220,9 @@ export class Submesh{
         });
         const coords = this.coordinates();
         const model = this.voxelMesh.getSubmesh(this.x, this.y, 2, coords, groundMaterial);
-        
+        model.name = 'ground_mesh';
         if(!this.mesh) this.mesh = model;
+        
         return model;
     }
     
@@ -259,12 +260,18 @@ export class Submesh{
     
     refreshGeometry(){
         if(this.mesh){
-            this.mesh.geometry.attributes.position.array = Float32Array.from(
-                this.coordinates()
-            );
-            this.mesh.geometry.attributes.position.needsUpdate = true;
-            this.mesh.material.needsUpdate = true;
-            this.mesh.geometry.computeVertexNormals();
+            if(this.mesh.geometry){
+                this.mesh.geometry.attributes.position.array = Float32Array.from(
+                    this.coordinates()
+                );
+                this.mesh.geometry.attributes.position.needsUpdate = true;
+                this.mesh.material.needsUpdate = true;
+                this.mesh.geometry.computeVertexNormals();
+            }else{
+                //refresh physics mesh for 
+                //this.body();
+            }
+            
         } //else no refresh
     }
     

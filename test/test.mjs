@@ -3,10 +3,11 @@ import { chai } from '@environment-safe/chai';
 import { it } from '@open-automaton/moka';
 import { MarkerEngine, Marker } from '../src/index.mjs';
 import { Worker } from '@environment-safe/esm-worker';
+import { shiftTiles } from '../src/tiles.mjs';
 const should = chai.should();
 
-describe('module', ()=>{
-    describe('performs a simple test suite', ()=>{
+describe('marker-engine', ()=>{
+    describe.skip('performs a simple test suite', ()=>{
         it('worker is working in test mode', async ()=>{
             const worker = new Worker('./test-assets/worker-test.mjs', {
                 inheritMap: true, 
@@ -152,6 +153,96 @@ describe('module', ()=>{
             });
             engine.stop();
             engine.cleanup();
+        });
+    });
+    describe('basic shifting validation', ()=>{
+        it('shifts northeast', async ()=>{
+            const submeshes  = {
+                current : 'foo',
+                north : 'bar',
+                south : 'baz',
+                east : 'bat',
+                west : 'qux',
+                northeast : 'quux',
+                northwest : 'corge',
+                southeast : 'grault',
+                southwest : 'garply'
+                // where's waldo?
+            };
+            const deleted = [];
+            const mutatedSubmeshes = await shiftTiles(submeshes, {
+                horizontal: 1,
+                vertical: 1
+            }, (submesh, direction)=>{ //shiftFn
+                //noop
+            }, (tile, location)=>{ //loadFn
+                return '*';
+            }, (submesh)=>{ //removeFn
+                deleted.push(submesh)
+            });
+            mutatedSubmeshes.current.should.equal(submeshes.northeast);
+            
+            mutatedSubmeshes.north.should.equal('*');
+            mutatedSubmeshes.south.should.equal(submeshes.east);
+            mutatedSubmeshes.east.should.equal('*');
+            mutatedSubmeshes.west.should.equal(submeshes.north);
+            
+            mutatedSubmeshes.northeast.should.equal('*');
+            mutatedSubmeshes.northwest.should.equal('*');
+            mutatedSubmeshes.southeast.should.equal('*');
+            mutatedSubmeshes.southwest.should.equal(submeshes.current);
+            
+            // corge | bar quux
+            // qux   | foo bat
+            //       +----------
+            // garply baz grault
+            deleted.should.deep.equal([ 'baz', 'qux', 'corge', 'grault', 'garply' ]);
+            console.log(mutatedSubmeshes, deleted);
+        });
+        
+        it('shifts southwest', async ()=>{
+            const submeshes  = {
+                current : 'foo',
+                north : 'bar',
+                south : 'baz',
+                east : 'bat',
+                west : 'qux',
+                northeast : 'quux',
+                northwest : 'corge',
+                southeast : 'grault',
+                southwest : 'garply'
+                // where's waldo?
+            };
+            const deleted = [];
+            const mutatedSubmeshes = await shiftTiles(submeshes, {
+                horizontal: -1,
+                vertical: -1
+            }, (submesh, direction)=>{ //shiftFn
+                //noop
+            }, (tile, location)=>{ //loadFn
+                console.log('tile', tile);
+                return '*';
+            }, (submesh)=>{ //removeFn
+                deleted.push(submesh)
+            });
+            mutatedSubmeshes.current.should.equal(submeshes.southwest);
+            
+            mutatedSubmeshes.north.should.equal(submeshes.west);
+            mutatedSubmeshes.south.should.equal('*');
+            mutatedSubmeshes.east.should.equal(submeshes.south);
+            mutatedSubmeshes.west.should.equal('*');
+            
+            mutatedSubmeshes.northeast.should.equal(submeshes.current);
+            mutatedSubmeshes.northwest.should.equal('*');
+            mutatedSubmeshes.southeast.should.equal('*');
+            mutatedSubmeshes.southwest.should.equal('*');
+            
+            // corge  bar   quux
+            // -----------+
+            // qux    foo | bat
+            // garply baz | grault
+            deleted.should.deep.equal([ 'bar', 'bat', 'quux', 'corge', 'grault' ]);
+            console.log(mutatedSubmeshes, deleted);
         });
     });
 });

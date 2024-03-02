@@ -67,6 +67,7 @@ export class MarkerEngine{
                 this.addMarker(marker);
             });
             this.addSubmesh(submesh);
+            console.log('LOC', submeshData.location)
             this.submeshes[submeshData.location] = submesh;
             this.emit('submesh', submesh);
             if(Object.keys(this.submeshes).length === 9){ //initial submeshes loaded
@@ -82,12 +83,47 @@ export class MarkerEngine{
             }
         });
         this.physicsDebugMeshes = [];
-        this.on('treadmill-transition', (data)=>{
+        this.on('treadmill-transition', async (data)=>{
             const {x, y} = data.transition;
-            const submeshes = {};
+            //delete
+            if(data.removals){
+                this.emit('remove-submeshes', data.removals);
+            }
+            //shift
+            Object.keys(this.submeshes).forEach((key)=>{
+                this.submeshes[key].mesh.position.x += -1*x*16;
+                this.submeshes[key].mesh.position.y += -1*y*16;
+            });
+            //add
+            if(data.submeshes){
+                const submeshesLoadedPromises = data.submeshes.map( async (submeshData)=>{
+                    if(voxelFilePromise) await voxelFilePromise;
+                    if(this.voxelMesh){
+                        submeshData.voxelMesh = this.voxelMesh;
+                    }
+                    const submesh = new Submesh(submeshData);
+                    /*const markers = this.createMarkers(submeshData.worldX, submeshData.worldY);
+                    markers.forEach((marker)=>{
+                        this.addMarker(marker);
+                    });*/
+                    this.addSubmesh(submesh);
+                    console.log('LOC', submeshData.location)
+                    this.submeshes[submeshData.location] = submesh;
+                    this.emit('submesh', submesh);
+                });
+                await Promise.all(submeshesLoadedPromises);
+                //weldTreadmill(this.submeshes);
+                /*Object.keys(this.submeshes).forEach((key)=>{
+                    this.emit('submesh', this.submeshes[key]);
+                });*/
+                this.emit('load', {});
+            }
+            
+            /*const submeshes = {};
             let newPosition = null;
             let neighborhood = null;
             const oldSubmeshes = Object.keys(this.submeshes).map((key)=> this.submeshes[key]);
+            const removed = [];
             Object.keys(this.submeshes).forEach((key)=>{
                 //change position
                 this.submeshes[key].mesh.position.x += x*16;
@@ -105,9 +141,11 @@ export class MarkerEngine{
                 if(newPosition){
                     submeshes[newPosition] = this.submeshes[key];
                 }else{
+                    removed.push(this.submeshes[key])
                     this.emit('remove-submesh', this.submeshes[key]);
                 }
-            });
+            });*/
+            //this.emit('remove-submeshes', removed);
             //*
             if(options.debug && data.surfaces && data.positions){
                 this.physicsDebugMeshes.forEach((mesh)=>{
@@ -119,7 +157,7 @@ export class MarkerEngine{
                 this.emit('physics-mesh', meshes);
                 this.physicsDebugMeshes = meshes;
             } //*/
-            this.submeshes = submeshes;
+            //this.submeshes = submeshes;
             this.markers.forEach((marker)=>{
                 marker.mesh.position.x += x*16;
                 marker.mesh.position.y += y*16;
@@ -157,6 +195,7 @@ export class MarkerEngine{
             }
         }
     }
+    
     localPositionFor(worldPosition){
         if(!this.submeshes.current){
             //this should only happen while submeshes are loading
@@ -205,6 +244,30 @@ export class MarkerEngine{
         this.worker.postMessage(JSON.stringify({
             type: 'add-submesh',
             submesh: data
+        }));
+    }
+    
+    shift(dir){
+        const transition = {};
+        if(dir.horizontal){
+            if(dir.horizontal === 'east'){
+                transition.x = 1;
+            }
+            if(dir.horizontal === 'west'){
+                transition.x = -1;
+            }
+        }
+        if(dir.horizontal){
+            if(dir.vertical === 'north'){
+                transition.y = 1;
+            }
+            if(dir.vertical === 'south'){
+                transition.y = -1;
+            }
+        }
+        this.worker.postMessage(JSON.stringify({
+            type: 'shift',
+            transition
         }));
     }
     

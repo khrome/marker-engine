@@ -102,6 +102,64 @@ export const allTiles = async (handler)=>{
     }catch(ex){}
 };
 
+export const shiftTiles = async (submeshes, direction, shiftFn, loadFn, removeFn)=>{
+    const newSubmeshes = {};
+    await allTiles(async (tile, location)=>{
+        try{
+            const submesh = submeshes[location];
+            let newTarget = location;
+            const neighborhoodH = neighbors(newTarget);
+            let xShift = 0;
+            let yShift = 0;
+            if(direction.horizontal === 1 || direction.west){
+                newTarget = neighborhoodH.west;
+                xShift = 1;
+            }
+            if(direction.horizontal === -1 || direction.east){
+                newTarget = neighborhoodH.east;
+                xShift = -1;
+            }
+            // we have to reassess neighbors, movement might have been diagonal
+            if(newTarget){ //if we already dropped off the map, give up
+                const neighborhoodV = neighbors(newTarget);
+                if(direction.vertical === 1 || direction.south){
+                    newTarget = neighborhoodV.south;
+                    yShift = 1;
+                }
+                if(direction.vertical === -1 || direction.north){
+                    newTarget = neighborhoodV.north;
+                    yShift = -1;
+                }
+            }
+            if(newTarget){
+                newSubmeshes[newTarget] = submesh;
+                await shiftFn(submesh, {
+                    x: xShift,
+                    y: yShift,
+                    worldX: submeshes[newTarget].worldX + xShift,
+                    worldY:submeshes[newTarget].worldY + yShift
+                });
+            }else{
+                await removeFn(submesh);
+            }
+        }catch(ex){
+            console.log(ex);
+        }
+    });
+    await allTiles(async (tile, location)=>{
+        if(!newSubmeshes[location]){
+            const submesh = await loadFn({
+                x: tile.x,
+                y: tile.y,
+                worldX: newSubmeshes.current.worldX + tile.x,
+                worldY: newSubmeshes.current.worldY + tile.y
+            }, location);
+            newSubmeshes[location] = submesh;
+        }
+    });
+    return newSubmeshes;
+};
+
 const direction = {
     current: { x: 0, y: 0 },
 

@@ -28,7 +28,7 @@ import {
 
 import Logger from 'bitwise-logger';
 
-import { allTiles, neighbors, Tile, tileForPos } from './tiles.mjs';
+import { allTiles, neighbors, Tile, weldTreadmill, tileForPos, shiftTiles } from './tiles.mjs';
 
 
 try{
@@ -128,8 +128,92 @@ export const workerStateSetup = ()=>{
     
     let xMod = null;
     let yMod = null;
-    const transitionTreadmill = (dir)=>{
-        xMod = dir.x * 16;
+    self.transitionTreadmill = async (dir)=>{
+        const addedSubmeshes = [];
+        const removedSubmeshes = [];
+        const moveSubmeshActions = [];
+        const submeshData = [];
+        //these actions are async, so we just schedule
+        const mutatedSubmeshes = await shiftTiles(self.submeshes, {
+            horizontal: dir.x,
+            vertical: dir.y
+        }, (submesh, direction)=>{ //shiftFn
+            moveSubmeshActions.push(()=>{
+                submesh.mesh.position.x += -1*dir.x*16;
+                submesh.mesh.position.y += -1*dir.y*16;
+            });
+        }, (tile, location)=>{ //loadFn
+            console.log('TILE', tile)
+            const submesh = new Submesh({
+                x: tile.x,
+                y: tile.y,
+                tileX: tile.worldX,
+                tileY: tile.worldY,
+                voxelMesh: self.voxelMesh
+            });
+            submesh.location = location
+            submesh.body();
+            submesh.mesh.position.x = tile.x;
+            submesh.mesh.position.y = tile.y;
+            addedSubmeshes.push(submesh);
+            return submesh;
+        }, (submesh)=>{ //removeFn
+            removedSubmeshes.push(submesh);
+        });
+        //add incoming markers
+        const markerCreationPromises = addedSubmeshes.map((submesh)=>{
+            return new Promise(async (resolve, reject)=>{
+                const data = submesh.data();
+                data.location = submesh.location;
+                console.log('data', data);
+                submeshData.push(data);
+                const localMarkers = await self.createMarkers(submesh.worldX, submesh.worldY);
+                localMarkers.forEach((marker)=>{
+                    marker.adoptedBySubmesh(submesh);
+                });
+                resolve(submesh);
+            })
+        })
+        await Promise.all(markerCreationPromises);
+        // act on scheduled actions all at once on submeshes
+        moveSubmeshActions.forEach((moveFn)=>moveFn());
+        addedSubmeshes.forEach((submesh)=>{
+            delete submesh.location;
+            self.addSubmesh(submesh, submesh.location);
+        });
+        const removalData = [];
+        removedSubmeshes.forEach((submesh)=>{
+            self.physicalWorld.removeBody(submesh.mesh);
+            removalData.push({ 
+               worldX: submesh.worldX,
+               worldY: submesh.worldY
+            });
+        });
+        weldTreadmill(mutatedSubmeshes);
+        self.submeshes = mutatedSubmeshes;
+        
+        // send mesh state to client
+        // TODO: merge these messages?
+        const message = {
+            type:'treadmill-transition', 
+            transition: dir,
+            submeshes: submeshData,
+            removals: removalData
+        };
+        if(self.world.debug){
+            message.surfaces = self.getSubmeshMeshes().map((mesh)=> mesh.coords);
+            message.positions = self.getSubmeshMeshes().map((mesh)=> mesh.position);
+        }
+        self.postMessage(JSON.stringify(message));
+        /*self.postMessage(JSON.stringify({
+            type:'submesh-update', 
+            submesh: submeshData
+        }));
+        self.postMessage(JSON.stringify({
+            type:'submesh-remove', 
+            removals: removalData
+        }));*/
+        /*xMod = dir.x * 16;
         yMod = dir.y * 16;
         const submeshes = {};
         let newPosition = null;
@@ -173,6 +257,7 @@ export const workerStateSetup = ()=>{
                             voxelMesh: self.voxelMesh
                         });
                         self.addSubmesh(submesh, location);
+                        
                         const data = submesh.data();
                         data.location = location;
                         submeshData.push(data);
@@ -224,7 +309,7 @@ export const workerStateSetup = ()=>{
                 type:'submesh-remove', 
                 removals: removalData
             }));
-        })();
+        })(); //*/
     }
     
     self.start = ()=>{
@@ -260,16 +345,16 @@ export const workerStateSetup = ()=>{
                         if(self.focusedMarker.mesh.position.x > 16) transition.x = -1;
                         if(self.focusedMarker.mesh.position.y > 16) transition.y = -1;
                         
-                        const message = {
+                        /*const message = {
                             type:'treadmill-transition', 
                             transition
-                        };
-                        transitionTreadmill(transition);
-                        if(self.world.debug){
+                        };*/
+                        self.transitionTreadmill(transition);
+                        /*if(self.world.debug){
                             message.surfaces = self.getSubmeshMeshes().map((mesh)=> mesh.coords);
                             message.positions = self.getSubmeshMeshes().map((mesh)=> mesh.position);
                         }
-                        self.postMessage(JSON.stringify(message));
+                        self.postMessage(JSON.stringify(message));*/
                     }
                 }
                 removedMarkers = [];
@@ -315,7 +400,6 @@ try{
                 switch(data.type){
                     //*
                     case 'world': //incoming world definition
-                        console.log('===>', data.world)
                         
                         if(data.world.debug){
                             Logger.level = Logger.ERROR & Logger.DEBUG & Logger.INFO;
@@ -396,6 +480,9 @@ try{
                     case 'add-marker':
                         const marker = new Marker(data.marker);
                         self.addMarker(marker);
+                        break;
+                    case 'shift':
+                        self.transitionTreadmill(data.transition);
                         break;
                     case 'move-marker':
                         break;

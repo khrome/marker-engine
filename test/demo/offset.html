@@ -501,6 +501,9 @@
             engine.on('submesh', (submesh)=>{
                 viz2.addSubmesh(submesh);
             });
+            engine.on('remove-submeshes', (submeshes)=>{
+                console.log(submeshes)
+            });
             (async()=>{
                 try{
                     await engine.initialize();
@@ -547,7 +550,10 @@
                             z: 0
                         };
                         console.log('AWP', avatarWorldPosition, avatarMoveTarget);
-                        avatar.action('moveTo', {}, avatarMoveTarget);
+                        //avatar.action('moveTo', {}, avatarMoveTarget);
+                        setTimeout(()=>{
+                            engine.shift({horizontal: 'east', vertical: 'north'});
+                        }, 2000);
                         //avatar.action('moveTo', {}, {x: 5, y: 20, z: 0});
                         //avatar.action('moveTo', {}, {x: -20, y: 5, z: 0});
                         //avatar.action('moveTo', {}, {x: 2, y: 5, z: 0});

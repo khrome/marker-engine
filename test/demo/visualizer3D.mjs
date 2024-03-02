@@ -115,10 +115,25 @@ export class Visualizer3D{
             //if(window.tools) window.tools.tickStop();
             if(turnHandler) turnHandler();
         }, 100);
-        engine.on('remove-submesh', (submesh)=>{
-            this.scene.remove(submesh.mesh);
-            submesh.mesh.material.color.set(0x0000ff);
-            console.log('RMSBMSH', submesh);
+        engine.on('remove-submeshes', (submeshes)=>{
+            //maybe optimize this by holding meshes?
+            console.log('REMOVE')
+            this.scene.traverse(function(child) {
+                if(child.name === "ground_mesh") {
+                    console.log('ground_mesh', child.position);
+                    if(
+                        child.position.x < -16 ||
+                        child.position.x > 16 ||
+                        child.position.y < -16 ||
+                        child.position.y > 16
+                    ){
+                        scene.remove(child);
+                    }
+                }
+            });
+            //this.scene.remove(submesh.mesh);
+            //submesh.mesh.material.color.set(0x0000ff);
+            console.log('RMSBMSH');
         });
         engine.on('remove-markers', (markers)=>{
             markers.forEach((marker)=>{
