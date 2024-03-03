@@ -153,10 +153,16 @@ export class MarkerEngine{
             if(options.debug && data.surfaces && data.positions){
                 this.physicsDebugMeshes.forEach((mesh)=>{
                     mesh.remove();
-                })
+                });
+                if(this.debugMeshes){
+                    this.debugMeshes.forEach((debugMesh)=>{
+                        debugMesh.remove();
+                    });
+                }
                 const meshes = data.surfaces.map((coords, index)=>{
                     return createWireFrameFromGeometry(coords, data.positions[index])
                 });
+                this.debugMeshes = meshes;
                 this.emit('physics-mesh', meshes);
                 this.physicsDebugMeshes = meshes;
             } //*/
