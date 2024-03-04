@@ -1,10 +1,92 @@
 /* global describe:false */
 import { chai } from '@environment-safe/chai';
 import { it } from '@open-automaton/moka';
-import { MarkerEngine, Marker } from '../src/index.mjs';
+import { MarkerEngine, Marker, tools } from '../src/index.mjs';
 import { Worker } from '@environment-safe/esm-worker';
 import { shiftTiles } from '../src/tiles.mjs';
 const should = chai.should();
+
+import { Vector3 } from 'three';
+
+const relativePositionTo = (anchorPosition, relative)=>{
+    const target = {
+        x: anchorPosition.x, 
+        y: anchorPosition.y, 
+        z: anchorPosition.z
+    };
+    if(relative.x) target.x += relative.x;
+    if(relative.y) target.y += relative.y;
+    return target;
+}
+
+const buildSimulation = async (options = {})=>{
+    const vizEl = document.getElementById('viz');
+    const viz2El = document.getElementById('viz2');
+    const engine = new MarkerEngine(options);
+    const markers = [];
+    const addMarker = (x, y, marker)=>{
+        marker.position.x = x;
+        marker.position.y = y;
+        markers.push(marker);
+        engine.addMarker(marker);
+    };
+    engine.on('submesh', (submesh)=>{
+        
+    });
+    engine.on('remove-submeshes', (submeshes)=>{
+        
+    });
+    await engine.initialize();
+    let avatar = null;
+    await new Promise((resolve)=>{
+        engine.on('initial-load', ()=>{
+            
+            if(options.avatar){
+                const avatar = new Marker({
+                    id : 'player-avatar',
+                    meshAttached: true,
+                    values: {
+                        movementSpeed: 5
+                    }
+                });
+                
+                addMarker(5, 5, avatar);
+                engine.focusOn(avatar);
+            }
+            const avatar = new Marker({
+                id : 'player-avatar',
+                meshAttached: true,
+                values: {
+                    movementSpeed: 5
+                }
+            });
+            
+            addMarker(5, 5, avatar);
+            engine.focusOn(avatar);
+            const avatarWorldPosition = engine.worldPositionFor(avatar.position);
+            
+            const avatarMoveTarget = {
+                x: avatarWorldPosition.x+15, 
+                y: avatarWorldPosition.y+15, 
+                z: 0
+            };
+            
+            tools((tool)=>{
+                tool.sceneAxes(new Vector3(0, 0, 0), 2);
+                tool.sceneAxes(new Vector3(-16, -16, 0), 2);
+                tool.sceneAxes(new Vector3(0, -16, 0), 2);
+                tool.sceneAxes(new Vector3(-16, 0, 0), 2);
+                tool.sceneAxes(new Vector3(16, 16, 0), 2);
+                tool.sceneAxes(new Vector3(16, -16, 0), 2);
+                tool.sceneAxes(new Vector3(-16, 16, 0), 2);
+                tool.sceneAxes(new Vector3(0, 16, 0), 2);
+                tool.sceneAxes(new Vector3(16, 0, 0), 2);
+            });
+        });
+        resolve();
+    });
+    return { engine, avatar };
+};
 
 describe('marker-engine', ()=>{
     describe.skip('performs a simple test suite', ()=>{
@@ -243,6 +325,46 @@ describe('marker-engine', ()=>{
             // garply baz | grault
             deleted.should.deep.equal([ 'bar', 'bat', 'quux', 'corge', 'grault' ]);
             console.log(mutatedSubmeshes, deleted);
+        });
+        
+        it.skip('tracks marker + shifts appropriately', async ()=>{
+            const { engine, avatar } = await buildSimulation({
+                voxelFile: '../test/demo/layered-perlin-mesh.mjs',
+                markerTypesFile: '../src/default-markers.mjs',
+                x: 5,
+                y: 5,
+                avatar: true
+            });
+            const avatarWorldPosition = engine.worldPositionFor(avatar.position);
+            const targetPosition = relativePositionTo(avatarWorldPosition, {
+                x: 15, 
+                y: 20
+            });
+            //TODO make this state await-able
+            avatar.action('moveTo', {}, targetPosition);
+            
+            //TODO generalize waiting for a specific state (sift?)
+            const stateSeen = new Promise((resolve, reject)=>{
+                let seen = false;
+                engine.on('state', (data)=>{
+                    if(seen) return;
+                    data.marker.forEach((marker)=>{
+                        if(
+                            marker.position.x === targetPosition.x &&
+                            marker.position.y === targetPosition.y
+                        ){
+                            seen = true;
+                            resolve();
+                        }
+                    });
+                });
+            });
+            engine.on('state', (data)=>{
+                data.marker
+            });
+            engine.start();
+            await stateSeen;
+            engine.stop();
         });
     });
 });
